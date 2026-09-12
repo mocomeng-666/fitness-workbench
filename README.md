@@ -10,24 +10,70 @@
 - JSON 记录导入导出、照片 ZIP 导出、离线应用外壳。
 - 可选 AI 器械识别：自行配置服务商、模型与 API Key。
 
+## 项目用途
+
+用于安排并执行个人力量与有氧训练：先建立档案、确认每周排期，再记录每组重量、次数和剩余次数（RIR），最后通过趋势与周报回顾进步。适合希望规律训练、需要轻量记录工具的用户，也可作为原生前端与离线 PWA 的学习项目。
+
+项目无需注册，没有后端服务；动作库以文字要领和常见错误说明动作。AI 器械识别是可选功能，不配置也能使用训练与记录功能。
+
 ## 本地运行
 
-需要 Python 3，无需安装前端构建依赖。
+### 环境要求
+
+- Python 3：用于构建和启动本地静态文件服务，仅使用标准库。
+- 支持 IndexedDB 和 Service Worker 的现代浏览器。
+- Git：仅在使用克隆方式获取代码时需要；也可以在 GitHub 点击 **Code → Download ZIP** 后解压。
+
+不需要 Node.js、npm 或额外的 Python 包。
+
+### 获取项目并启动
+
+```sh
+git clone https://github.com/mocomeng-666/fitness-workbench.git
+cd fitness-workbench
+python3 build.py
+python3 -m http.server 8000 --bind 127.0.0.1 --directory dist
+```
+
+在浏览器打开 [http://localhost:8000](http://localhost:8000)，填写初始档案并确认计划。终端保持运行；按 `Ctrl+C` 停止服务。如果下载的是 ZIP，先在终端进入解压后的项目目录，再执行最后两条命令。
+
+Windows 若没有 `python3` 命令，可将其替换为 `py -3`。
+
+请通过本地服务访问，不要直接双击 HTML。首次在线加载并完成 Service Worker 安装后，核心训练与文字动作库可离线使用；AI 识别仍需联网。建议固定使用同一个地址和端口，以便继续访问原来的本地记录。
+
+## 构建方法
+
+在项目根目录执行：
 
 ```sh
 python3 build.py
-python3 -m http.server 8000 --directory dist
 ```
 
-打开 http://localhost:8000 。请通过 HTTP 服务访问，不要直接双击 HTML。首次在线加载并完成服务工作线程安装后，核心训练与文字动作库可离线使用；AI 识别仍需联网。
+构建脚本读取 `src/index.html`，内联 `styles.css`，然后依次内联 `data.js`、`db.js`、`engine.js`、`app.js`。生成的文件结构为：
 
-`src/` 是开发源码；`build.py` 按顺序内联样式和脚本，生成 `dist/index.html`，另保留 `sw.js` 与 `manifest.webmanifest`。每次构建会重新生成整个 `dist/`，不要手动在里面保存个人文件。
+```text
+dist/
+├── index.html             # 已内联样式与应用脚本
+├── sw.js                  # 离线缓存
+└── manifest.webmanifest   # PWA 配置
+```
 
-## GitHub 分享与部署
+每次构建会删除并重新生成整个 `dist/`。请在 `src/` 修改源码，不要直接编辑构建产物或把个人文件放进 `dist/`。
 
-本仓库同时包含源码与可部署的 `dist/`。将本目录内容上传到你新建的 GitHub 仓库即可分享代码。部署网站时，将 `dist/` 内容发布到 GitHub Pages 或其他 HTTPS 静态托管服务。资源使用相对路径，支持仓库子路径。
+### 修改后预览
 
-修改源码后重新构建；发布新版本前更新 `src/sw.js` 的缓存版本。安装 PWA 的支持情况取决于浏览器。
+1. 修改 `src/` 中对应的页面、样式、数据或逻辑。
+2. 更新 `src/sw.js` 中的 `CACHE` 版本字符串，让浏览器识别新版缓存。
+3. 再次运行 `python3 build.py`，通过本地服务刷新页面查看结果；必要时再次刷新，等待新版缓存接管。
+4. 提交源码和重新生成的 `dist/`。
+
+如果页面仍显示旧内容，可换一个未使用的本地端口检查构建结果；新端口会使用独立的站点存储，不会显示旧端口下的记录。
+
+## 部署
+
+将 `dist/` 内的三个文件一同发布至 HTTPS 静态托管服务，保持相对位置。资源使用相对路径，支持仓库子路径。PWA 安装支持情况取决于浏览器。
+
+仅把源码上传到 GitHub 仓库不会自动生成可访问的网站；使用 GitHub Pages 时，还需配置发布流程，将 `dist/` 作为网站产物发布。
 
 ## 数据与隐私
 
