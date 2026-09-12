@@ -1,7 +1,9 @@
 /* sw.js — Service Worker：Cache First（应用外壳），安装后核心训练功能可离线使用 */
 'use strict';
 
-const CACHE = 'fitness-workbench-public-v1';
+const VERSION = 'fitness-workbench-public-v2';
+const CACHE_PREFIX = 'fitness-workbench:' + self.registration.scope + ':';
+const CACHE = CACHE_PREFIX + VERSION;
 const SHELL = [
   './',
   './index.html',
@@ -18,15 +20,17 @@ self.addEventListener('install', e => {
 self.addEventListener('activate', e => {
   e.waitUntil(
     caches.keys().then(keys =>
-      Promise.all(keys.filter(k => k.startsWith('fitness-workbench-') && k !== CACHE).map(k => caches.delete(k)))
+      Promise.all(keys.filter(k => k.startsWith(CACHE_PREFIX) && k !== CACHE).map(k => caches.delete(k)))
     ).then(() => self.clients.claim())
   );
 });
 
 self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
+  const url = new URL(e.request.url);
+  if (!SHELL.some(path => new URL(path, self.registration.scope).href === url.origin + url.pathname)) return;
   e.respondWith(
-    caches.match(e.request, { ignoreSearch: true }).then(hit => {
+    caches.open(CACHE).then(c => c.match(e.request, { ignoreSearch: true })).then(hit => {
       if (hit) return hit;
       return fetch(e.request).then(resp => {
         // 同源静态资源运行时缓存
@@ -36,7 +40,7 @@ self.addEventListener('fetch', e => {
         }
         return resp;
       }).catch(() => {
-        if (e.request.mode === 'navigate') return caches.match('./index.html');
+        if (e.request.mode === 'navigate') return caches.open(CACHE).then(c => c.match(new URL('./index.html', self.registration.scope).href));
         return new Response('', { status: 504, statusText: 'offline' });
       });
     })
