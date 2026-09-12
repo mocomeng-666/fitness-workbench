@@ -1,0 +1,20 @@
+# Local metadata and deployment state
+.DS_Store
+.wrangler/
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+__pycache__/
+*.pyc
+node_modules/
+# Personal exports (do not place them in the repository)
+backups/
+photos/
+fitness-workbench-backup-*.json
+fitness-photos-*.zip
+training-sets-*.csv
+cardio-*.csv
+measurements-*.csv
+week-*-share.png
