@@ -2,6 +2,8 @@
 
 > Personal Fitness Workbench — 一个纯前端、零依赖、训练数据保存在本地的 8 周健身训练 PWA。
 
+[在线体验](https://mocomeng-666.github.io/fitness-workbench/) · [查看源码](https://github.com/mocomeng-666/fitness-workbench) · [查看发布状态](https://github.com/mocomeng-666/fitness-workbench/actions/workflows/pages.yml)
+
 按 **8 周力量 + 有氧训练计划**组织训练的移动端网页应用：根据你的训练目标、每周可训练天数和身体情况自动排期，训练时记录每组重量与剩余次数，并按规则自动给出进阶建议（该加多重、今天要不要减量）。训练记录和体态照片保存在你自己的浏览器里，不注册、不登录。核心训练功能可离线使用；可选 AI 器械识别需要联网，并会将所选照片发送给你配置的服务商。
 
 ---
@@ -143,9 +145,15 @@ npx wrangler pages deploy dist --project-name <你的项目名> --branch main
 
 **GitHub Pages（本仓库发布方式）**
 
-`.github/workflows/pages.yml` 在推送到 `main` 时自动运行，也可手动触发：使用 Python 执行 `build.py`，上传 `dist/`，然后发布到 GitHub Pages。仓库 Settings → Pages 的 Source 选择 GitHub Actions。
+当前站点已经启用 GitHub Pages，发布来源为 GitHub Actions：
 
-发布状态可在仓库 Actions 的 Deploy GitHub Pages 工作流中查看，部署步骤会输出实际网址。网站入口位于 `/fitness-workbench/`；安装入口、资源和离线缓存均使用项目内相对路径。
+- 实际网址：[https://mocomeng-666.github.io/fitness-workbench/](https://mocomeng-666.github.io/fitness-workbench/)
+- 发布工作流：[Deploy GitHub Pages](https://github.com/mocomeng-666/fitness-workbench/actions/workflows/pages.yml)
+- Pages 设置：[Settings → Pages](https://github.com/mocomeng-666/fitness-workbench/settings/pages)
+
+`.github/workflows/pages.yml` 在代码推送到 `main` 后自动运行，也支持在 Actions 页面手动触发。工作流使用 Python 执行 `build.py`，把生成的 `dist/` 上传为 Pages 构建产物，然后发布到 `github-pages` 环境。
+
+站点入口位于 `/fitness-workbench/`。Web App Manifest、Service Worker、页面入口和离线缓存均使用该项目路径下的相对地址；构建脚本会根据发布内容自动生成缓存版本。发布通常需要几十秒，可在工作流页面查看构建和部署状态。
 
 **其他**：Netlify / Vercel / 任意对象存储，直接上传 `dist/` 目录即可。
 
