@@ -1,0 +1,3620 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#7FB069">
+<title>个人健身训练工作台</title>
+<link rel="manifest" href="manifest.webmanifest">
+<style>
+/* styles.css — 个人健身训练工作台 V1.3（米色杂志风，克制、高级、生活感）
+ * 模块页色/蜂蜜黄退场：顶栏恒 --bg 米底；彩色只做识别与强调。
+ */
+:root {
+  /* 底色阶 */
+  --bg: #F5F0E6;          /* 米色页面底 */
+  --card: #FCFAF3;        /* 卡片 */
+  --cream: #FFFDF8;       /* 高亮卡/弹层内底 */
+  --ink: #3A362C;         /* 暖墨正文 */
+  --ink-sub: #8B8577;     /* 次级说明 */
+  --border: #E6E0D1;
+  /* 主色（抹茶绿，不变） */
+  --main: #7FB069;
+  --main-dark: #5A8F4A;
+  --main-bg: #E9F0E2;
+  /* 强调（深紫：成果区/提醒/关键数字/周报小标） */
+  --accent: #6F5F9E;
+  --accent-soft: #EFEBF5;
+  /* 安全语义 */
+  --warn: #C2410C;
+  --danger: #B91C1C;
+  /* 训练类型字色/浅底（识别色，不做整块） */
+  --cardio: #557E9E;  --cardio-bg: #E3EBF0;
+  --posture: #B96A38; --posture-bg: #F4E6DA;
+  --rest: #6F6D68;    --rest-bg: #ECEAE4;
+  /* 圆角 / 间距 */
+  --radius-card: 20px;
+  --radius-btn: 12px;
+  --radius-badge: 10px;
+  --radius-sm: 8px;
+  --shadow-soft: 0 1px 2px rgba(0,0,0,0.04);
+  /* V1.5 ⑥：语义辅助 token（主题可覆盖） */
+  --btn-text: #FFFFFF;
+  --danger-bg: #F6E0DE;
+  --warn-bg: #F7E6D6;
+  --warn-ink: #7C2D12;
+}
+
+/* V1.5 ⑥：皮肤「莓果」（浅藕底 + 莓果紫红主色 + 香槟金点缀，浓艳女性向） */
+body[data-theme="berry"] {
+  --bg: #FAF0F5; --card: #FFFBFE; --cream: #FFF8FC;
+  --ink: #542E43; --ink-sub: #96798E; --border: #EBDCE6;
+  --main: #C4457A; --main-dark: #A12F60; --main-bg: #F7E3EC;
+  --accent: #A97E2F; --accent-soft: #F6EFDB;
+  --warn: #C05A17; --danger: #B3261E;
+  --btn-text: #FFFFFF;
+  --danger-bg: #F8E0E2; --warn-bg: #F7ECD8; --warn-ink: #7C3F0E;
+}
+
+/* V1.5 ⑥：皮肤「暗夜」（墨绿黑底 + 青柠主色 + 琥珀点缀，深色运动向） */
+body[data-theme="night"] {
+  --bg: #1B221D; --card: #242E27; --cream: #2B362D;
+  --ink: #EDF1EA; --ink-sub: #A3B0A3; --border: #39463C;
+  --main: #A6C94E; --main-dark: #86A83A; --main-bg: #2E3A24;
+  --accent: #E0B04F; --accent-soft: #3A3324;
+  --cardio: #7FB0D9; --cardio-bg: #22303C;
+  --posture: #E09A62; --posture-bg: #3A2C20;
+  --rest: #9AA597; --rest-bg: #31382F;
+  --warn: #F2A65E; --danger: #EF7A6E;
+  --btn-text: #1B221D;
+  --danger-bg: #482A28; --warn-bg: #463424; --warn-ink: #F5C98C;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  font-family: -apple-system, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  font-size: 16px;
+  line-height: 1.55;
+}
+
+#app {
+  max-width: 480px;
+  margin: 0 auto;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+}
+@media (min-width: 900px) { #app { max-width: 640px; } }
+
+/* ===== 顶栏（恒米底，不再随模块变色） ===== */
+#app-header {
+  position: sticky; top: 0; z-index: 10;
+  background: var(--bg);
+  color: var(--ink);
+  padding: calc(env(safe-area-inset-top, 0px) + 16px) 20px 14px;
+  border-bottom: 1px solid var(--border);
+}
+#app-header.hdr-today,
+#app-header.hdr-plan,
+#app-header.hdr-progress,
+#app-header.hdr-library,
+#app-header.hdr-settings { background: var(--bg); color: var(--ink); }
+#page-title { font-size: 20px; font-weight: 700; letter-spacing: .02em; }
+
+#main { flex: 1; padding: 20px 16px 96px; }
+.page.hidden, .hidden { display: none !important; }
+
+/* ===== 底部 Tab（V1.3：激活=抹茶绿加粗 + 文字前小圆点） ===== */
+#tabbar {
+  position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+  width: 100%; max-width: 480px;
+  display: flex;
+  background: var(--card);
+  border-top: 1px solid var(--border);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  z-index: 20;
+}
+@media (min-width: 900px) { #tabbar { max-width: 640px; } }
+.tab {
+  flex: 1; min-height: 58px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 3px; border: none; background: none;
+  font-size: 12px; color: var(--ink-sub); cursor: pointer; position: relative;
+}
+.tab .tab-ico { font-size: 19px; line-height: 1; position: relative; }
+.tab.active { color: var(--ink); font-weight: 700; }
+.tab.active .tab-lbl::before {
+  content: ''; display: inline-block; width: 5px; height: 5px;
+  border-radius: 50%; background: var(--main); margin-right: 5px; vertical-align: 1px;
+}
+/* D3：计划未确认时 Tab 红点 */
+.tab-dot {
+  position: absolute; top: -5px; right: -12px;
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--danger); display: none;
+}
+.tab-dot.show { display: block; }
+
+/* ===== 通用组件 ===== */
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  padding: 20px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow-soft);
+}
+.card.cream { background: var(--cream); border-color: transparent; }
+.card h2 { font-size: 17px; font-weight: 700; letter-spacing: .02em; margin-bottom: 10px; }
+.card h3 { font-size: 15px; font-weight: 600; margin-bottom: 8px; }
+.sub { color: var(--ink-sub); font-size: 14px; }
+.small { font-size: 12px; color: var(--ink-sub); }
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: 46px; padding: 0 18px;
+  border-radius: var(--radius-btn); border: none;
+  font-size: 16px; font-weight: 600; cursor: pointer; letter-spacing: .01em;
+  background: var(--main); color: var(--btn-text);
+}
+.btn:active { opacity: 0.85; }
+.btn-secondary {
+  background: var(--cream); color: var(--ink);
+  border: 1px solid var(--border);
+}
+.btn-danger { background: var(--danger); }
+.btn-warn { background: var(--warn); }
+.btn-block { width: 100%; }
+.btn + .btn { margin-top: 8px; }
+.btn-row { display: flex; gap: 8px; }
+.btn-row .btn { flex: 1; margin-top: 0; }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+
+/* 类型徽章（训练类型识别） */
+.badge {
+  display: inline-block; padding: 3px 10px; border-radius: var(--radius-badge);
+  font-size: 12px; font-weight: 600; white-space: nowrap;
+}
+.badge.t-strength { background: var(--main-bg); color: var(--main-dark); }
+.badge.t-cardio { background: var(--cardio-bg); color: var(--cardio); }
+.badge.t-posture { background: var(--posture-bg); color: var(--posture); }
+.badge.t-rest { background: var(--rest-bg); color: var(--rest); }
+.badge.accent { background: var(--accent-soft); color: var(--accent); }
+.badge.subtle { background: var(--cream); color: var(--ink-sub); border: 1px solid var(--border); }
+.badge.red { background: var(--danger-bg); color: var(--danger); }
+.badge.orange { background: var(--warn-bg); color: var(--warn); }
+
+/* V1.3/V1.4：动作部位小标（克制中性浅紫小胶囊，多标签并排） */
+.part-tag {
+  display: inline-block; padding: 2px 8px; margin-left: 6px; vertical-align: 1px;
+  border-radius: 10px; background: var(--accent-soft); color: var(--accent);
+  font-size: 11px; font-weight: 600; white-space: nowrap;
+}
+.part-tag + .part-tag { margin-left: 4px; }
+
+/* V1.3 C5：部位轻提示细条 */
+.body-tip {
+  display: flex; align-items: flex-start; gap: 8px;
+  background: var(--accent-soft);
+  border-left: 3px solid var(--accent);
+  border-radius: 6px;
+  padding: 7px 10px;
+  margin: 6px 0 10px;
+  font-size: 12px; line-height: 1.5; color: var(--ink-sub);
+}
+.body-tip .bt-x {
+  flex: none; margin-left: auto;
+  border: none; background: none; cursor: pointer;
+  font-size: 13px; line-height: 1.4; color: var(--ink-sub);
+  padding: 0 2px;
+}
+
+input, select, textarea {
+  width: 100%; min-height: 44px;
+  padding: 8px 12px;
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  font-size: 16px; background: var(--cream); color: var(--ink);
+  font-family: inherit;
+}
+input[type=number]::-webkit-outer-spin-button,
+input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+input[type=number] { -moz-appearance: textfield; appearance: textfield; }
+label.field { display: block; margin-bottom: 12px; }
+label.field > span { display: block; font-size: 14px; color: var(--ink-sub); margin-bottom: 4px; }
+
+.row { display: flex; align-items: center; gap: 8px; }
+.row.between { justify-content: space-between; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+/* 单选 chip */
+.radio-chip {
+  display: inline-flex; align-items: center; justify-content: center; min-height: 42px;
+  padding: 6px 16px; margin: 0 6px 6px 0;
+  border: 1.5px solid var(--border); border-radius: 999px;
+  font-size: 15px; cursor: pointer; background: var(--cream); color: var(--ink);
+}
+.radio-chip.on { border-color: var(--main); background: var(--main-bg); color: var(--main-dark); font-weight: 600; }
+
+/* V1.3 C1：身体三档（chip + 副标小字） */
+.body-opt { margin-bottom: 6px; }
+.body-opt .radio-chip { margin-bottom: 2px; }
+.opt-sub { font-size: 12px; color: var(--ink-sub); margin: 0 0 10px 2px; }
+
+/* ===== 排期编辑器（7 天三态） ===== */
+.sched-day {
+  display: flex; align-items: center; gap: 8px;
+  padding: 9px 0; border-bottom: 1px solid var(--border);
+}
+.sched-day:last-child { border-bottom: none; }
+.sched-day .dow { width: 44px; font-weight: 600; font-size: 14px; color: var(--ink); }
+.sched-opts { display: flex; gap: 6px; flex: 1; }
+.sched-opt {
+  flex: 1; min-height: 40px; border-radius: var(--radius-sm);
+  border: 1.5px solid var(--border);
+  background: var(--cream); font-size: 13px; cursor: pointer; color: var(--ink-sub);
+}
+.sched-opt.on.t-strength { border-color: var(--main); background: var(--main-bg); color: var(--main-dark); font-weight: 700; }
+.sched-opt.on.t-cardio { border-color: var(--cardio); background: var(--cardio-bg); color: var(--cardio); font-weight: 700; }
+.sched-opt.on.t-rest { border-color: var(--rest); background: var(--rest-bg); color: var(--rest); font-weight: 700; }
+
+/* ===== 动作卡 / 组记录 ===== */
+.ex-card { border-left: 4px solid var(--main); }
+.ex-card.t-cardio { border-left-color: var(--cardio); }
+.ex-card.t-posture { border-left-color: var(--posture); }
+.set-row {
+  display: grid; grid-template-columns: 44px 1fr 1fr 1fr; gap: 6px;
+  align-items: end; margin-bottom: 6px;
+}
+.set-row .set-label { font-size: 14px; color: var(--ink-sub); padding-bottom: 10px; }
+
+/* ===== 折叠（B7 减字） ===== */
+details.fold { margin-top: 8px; }
+details.fold > summary {
+  cursor: pointer; font-size: 13px; color: var(--cardio);
+  min-height: 32px; display: flex; align-items: center;
+  list-style: none;
+}
+details.fold > summary::before { content: '▸ '; }
+details.fold[open] > summary::before { content: '▾ '; }
+details.fold ul { padding-left: 18px; }
+
+/* ===== 弹窗 ===== */
+#modal-root .modal-mask {
+  position: fixed; inset: 0; background: rgba(58,54,44,0.4);
+  display: flex; align-items: flex-end; justify-content: center; z-index: 100;
+}
+.modal-sheet {
+  background: var(--cream); width: 100%; max-width: 480px;
+  border-radius: 24px 24px 0 0; padding: 22px 20px calc(env(safe-area-inset-bottom, 0px) + 22px);
+  max-height: 84vh; overflow-y: auto;
+}
+.modal-sheet h3 { margin-bottom: 10px; }
+
+/* ===== V1.3 D2：计划页排期确认全屏视图 ===== */
+.sc-mask {
+  position: fixed; inset: 0; z-index: 90;
+  background: var(--bg);
+  display: flex; justify-content: center; align-items: flex-start;
+  overflow-y: auto;
+}
+.sc-mask .sc-panel {
+  width: 100%; max-width: 480px; margin: 0 auto;
+  background: var(--cream);
+  min-height: 100vh; padding: calc(env(safe-area-inset-top, 0px) + 24px) 20px calc(env(safe-area-inset-bottom, 0px) + 24px);
+}
+.sc-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
+.sc-head h3 { margin: 0; }
+.sc-head .btn { min-height: 38px; font-size: 14px; padding: 0 12px; flex: none; }
+.sc-count-line { margin: 10px 0 12px; }
+
+/* ===== 休息计时 ===== */
+#timer-overlay {
+  position: fixed; inset: 0; background: rgba(58,54,44,0.55);
+  display: flex; align-items: center; justify-content: center; z-index: 200;
+}
+#timer-box {
+  background: var(--cream); border-radius: 20px; padding: 28px 34px;
+  text-align: center; min-width: 230px;
+}
+#timer-label { color: var(--ink-sub); font-size: 14px; }
+#timer-display { font-size: 52px; font-weight: 700; color: var(--main-dark); font-variant-numeric: tabular-nums; margin: 8px 0 14px; }
+
+/* ===== ✅ 完成庆祝动效（C10） ===== */
+#celebrate-overlay {
+  position: fixed; inset: 0; z-index: 300;
+  background: rgba(245,240,230,0.95);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  animation: celFade .4s ease;
+}
+#celebrate-overlay .cel-emoji { font-size: 96px; line-height: 1; animation: celPop .8s cubic-bezier(.2, 1.6, .4, 1); }
+#celebrate-overlay .cel-text { margin-top: 14px; font-size: 18px; font-weight: 700; color: var(--main-dark); }
+@keyframes celPop { 0% { transform: scale(0); } 60% { transform: scale(1.25); } 100% { transform: scale(1); } }
+@keyframes celFade { from { opacity: 0; } to { opacity: 1; } }
+
+/* ===== 动作库 ===== */
+.lib-item { padding: 12px 0; border-bottom: 1px solid var(--border); }
+
+/* ===== 警告（浅底克制：橙=安全语义，红=红旗，soft=轻提醒） ===== */
+.alert-red {
+  background: var(--danger-bg); border: 1px solid var(--danger); color: var(--danger);
+  border-radius: var(--radius-sm); padding: 12px; margin-bottom: 12px; font-size: 14px;
+}
+.alert-orange {
+  background: var(--warn-bg); border: 1px solid var(--warn); color: var(--warn-ink);
+  border-radius: var(--radius-sm); padding: 12px; margin-bottom: 12px; font-size: 14px;
+}
+.alert-soft {
+  background: var(--cream); border: 1px solid var(--accent-soft); color: var(--accent);
+  border-radius: var(--radius-sm); padding: 12px; margin-bottom: 12px; font-size: 14px;
+}
+
+/* ===== B9 卡片式周视图 ===== */
+.week-progress { display: flex; gap: 4px; margin: 10px 0; }
+.week-progress .seg { flex: 1; height: 8px; border-radius: 4px; background: var(--border); }
+.week-progress .seg.done { background: var(--main-bg); }
+.week-progress .seg.cur { background: var(--main); }
+.day-cards { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
+.day-card {
+  border-radius: 12px; padding: 8px 3px; text-align: center;
+  font-size: 11px; border: 1.5px solid transparent; position: relative;
+}
+.day-card .dc-dow { font-weight: 700; font-size: 12px; color: var(--ink); }
+.day-card .dc-emoji { font-size: 17px; line-height: 1.3; }
+.day-card .dc-line { font-size: 10px; color: var(--ink-sub); }
+.day-card.t-strength { background: var(--main-bg); border-color: var(--main); }
+.day-card.t-cardio { background: var(--cardio-bg); border-color: var(--cardio); }
+.day-card.t-posture { background: var(--posture-bg); border-color: var(--posture); }
+.day-card.t-rest { background: var(--rest-bg); border-color: transparent; }
+.day-card.is-today { transform: scale(1.08); box-shadow: 0 2px 8px rgba(58,54,44,0.06); z-index: 1; }
+.day-card .dc-done { position: absolute; top: -6px; right: -3px; font-size: 13px; }
+.week-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.week-nav .btn { min-height: 38px; padding: 0 12px; font-size: 14px; }
+
+/* 计划页动作清单卡片 */
+.plan-ex {
+  display: flex; justify-content: space-between; align-items: center; gap: 8px;
+  padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 14px;
+}
+.plan-ex:last-child { border-bottom: none; }
+.plan-ex .pe-meta { font-size: 12px; color: var(--ink-sub); text-align: right; }
+
+/* ===== 分享卡 ===== */
+.share-img { width: 100%; border-radius: var(--radius-card); border: 1px solid var(--border); }
+
+.photo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.photo-grid img { width: 100%; border-radius: var(--radius-sm); aspect-ratio: 3/4; object-fit: cover; }
+
+/* ===== V1.4：执行页「换动作」弹层（推荐替代 / 自己挑一个，两区滚动） ===== */
+.swap-sec-head {
+  font-size: 13px; font-weight: 700; color: var(--ink);
+  letter-spacing: .02em; margin: 10px 0 6px;
+}
+.swap-sec-head:first-of-type { margin-top: 2px; }
+.swap-divider { height: 1px; background: var(--border); margin: 8px 0 0; }
+.swap-list {
+  max-height: 188px; overflow-y: auto;
+  display: flex; flex-direction: column; gap: 6px;
+  padding: 2px 2px 4px 0;
+}
+.swap-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  width: 100%; min-height: 44px; padding: 7px 12px;
+  text-align: left; cursor: pointer;
+  background: var(--cream); color: var(--ink);
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  font-size: 14px; font-family: inherit;
+}
+.swap-row:active { opacity: .8; }
+.swap-name { display: inline-flex; align-items: center; flex-wrap: wrap; }
+.swap-name .part-tag { margin-left: 6px; }
+.swap-name .part-tag:first-of-type { margin-left: 0; }
+.swap-row .swap-type {
+  flex: none; font-size: 11px; color: var(--ink-sub);
+  background: var(--bg); padding: 2px 9px; border-radius: 999px; white-space: nowrap;
+}
+
+/* ===== V1.4：动作库拍器械识别入口 / 识别结果 / 免责条 ===== */
+.vision-cta { padding: 14px 16px; }
+.vision-cta .btn { min-height: 50px; font-size: 16px; }
+.vision-note { margin: 2px 0 12px; font-size: 13px; }
+
+</style>
+</head>
+<body>
+<div id="app">
+  <header id="app-header">
+    <h1 id="page-title">今天</h1>
+  </header>
+
+  <main id="main">
+    <section id="page-today" class="page"></section>
+    <section id="page-plan" class="page hidden"></section>
+    <section id="page-progress" class="page hidden"></section>
+    <section id="page-library" class="page hidden"></section>
+    <section id="page-settings" class="page hidden"></section>
+    <section id="page-onboarding" class="page hidden"></section>
+  </main>
+
+  <nav id="tabbar">
+    <button class="tab" data-page="today"><span class="tab-ico">🏋️</span><span class="tab-lbl">今天</span></button>
+    <button class="tab" data-page="plan"><span class="tab-ico">🗓️<i class="tab-dot"></i></span><span class="tab-lbl">计划</span></button>
+    <button class="tab" data-page="progress"><span class="tab-ico">📈</span><span class="tab-lbl">进展</span></button>
+    <button class="tab" data-page="library"><span class="tab-ico">📖</span><span class="tab-lbl">动作库</span></button>
+    <button class="tab" data-page="settings"><span class="tab-ico">⚙️</span><span class="tab-lbl">设置</span></button>
+  </nav>
+</div>
+
+<div id="celebrate-overlay" class="hidden">
+  <div class="cel-emoji">✅</div>
+  <div class="cel-text" id="celebrate-text"></div>
+</div>
+
+<div id="modal-root"></div>
+<div id="timer-overlay" class="hidden">
+  <div id="timer-box">
+    <div id="timer-label">休息</div>
+    <div id="timer-display">00:00</div>
+    <button id="timer-skip" class="btn btn-secondary">跳过</button>
+  </div>
+</div>
+
+<script>
+/* data.js — 8周计划、动作库、文案常量（代码内配置，不入库） */
+'use strict';
+
+/* ============ 动作库 ============
+ * type: free(自由重量) / machine(固定器械) / bodyweight(自重) / cable(绳索) / cardio(有氧器械)
+ * target: lower / upper / core / posture / cardio
+ */
+const EXERCISES = {
+  goblet_box_squat: {
+    id: 'goblet_box_squat', name: '哑铃高脚杯箱式深蹲', en: 'Dumbbell Goblet Box Squat',
+    type: 'free', target: 'lower', bodyweight: false,
+    cues: ['双手捧哑铃于胸前，背部挺直', '臀部向后坐向箱子，膝随脚尖方向', '以无痛幅度为准，大腿平行地面不是成功条件', '轻触箱子后发力站起，不要放松坐下'],
+    mistakes: ['膝盖内扣', '弯腰弓背', '坐到箱上完全卸力'],
+    kneeCaution: true
+  },
+  db_rdl: {
+    id: 'db_rdl', name: '哑铃罗马尼亚硬拉', en: 'Dumbbell Romanian Deadlift',
+    type: 'free', target: 'lower', bodyweight: false,
+    cues: ['双手持哑铃置于大腿前侧', '屈髋向后推臀，小腿基本垂直', '哑铃沿大腿下滑至腘绳肌有明显拉伸感', '脚跟发力伸髋站起，背部始终平直'],
+    mistakes: ['弓背弯腰', '把动作做成深蹲', '哑铃离身体太远'],
+    kneeCaution: false
+  },
+  seated_row: {
+    id: 'seated_row', name: '坐姿划船机', en: 'Seated Cable Row Machine',
+    type: 'machine', target: 'upper', bodyweight: false,
+    cues: ['坐姿挺胸，双脚踩稳', '拉手把至下腹部，肩胛骨向后夹', '缓慢回放至手臂伸直，保持躯干稳定'],
+    mistakes: ['身体大幅后仰借力', '耸肩', '回放过快'],
+    kneeCaution: false
+  },
+  chest_press: {
+    id: 'chest_press', name: '坐姿推胸机', en: 'Machine Chest Press',
+    type: 'machine', target: 'upper', bodyweight: false,
+    cues: ['座椅调至把手与胸中部同高', '肩胛贴紧靠垫，向前推至手臂接近伸直', '缓慢回放，保持张力'],
+    mistakes: ['耸肩', '手腕过度后折', '锁死肘关节猛推'],
+    kneeCaution: false
+  },
+  glute_bridge: {
+    id: 'glute_bridge', name: '自重臀桥', en: 'Bodyweight Glute Bridge',
+    type: 'bodyweight', target: 'lower', bodyweight: true,
+    cues: ['仰卧屈膝，脚跟靠近臀部', '发力顶髋至肩-髋-膝成直线', '顶端收紧臀部停 1 秒后缓慢下放'],
+    mistakes: ['腰椎过伸代偿', '下放过快', '膝盖内扣'],
+    kneeCaution: false
+  },
+  dead_bug: {
+    id: 'dead_bug', name: '死虫', en: 'Dead Bug',
+    type: 'bodyweight', target: 'core', bodyweight: true, perSide: true,
+    cues: ['仰卧，手臂指向天花板，髋膝各 90°', '腰部轻贴地面保持核心收紧', '对侧手脚缓慢下放接近地面后还原', '全程腰不要离地'],
+    mistakes: ['腰部拱起离地', '动作过快', '憋气'],
+    kneeCaution: false
+  },
+  split_squat: {
+    id: 'split_squat', name: '有支撑分腿蹲', en: 'Supported Split Squat',
+    type: 'bodyweight', target: 'lower', bodyweight: true, perSide: true,
+    cues: ['前后分腿站立，可单手扶支撑物', '垂直下蹲，前腿膝随脚尖方向', '以无痛幅度为准，后腿膝轻点地即可', '前脚发力站起，躯干保持直立'],
+    mistakes: ['前膝过度前移内扣', '身体前倾过多', '步距过窄不稳'],
+    kneeCaution: true
+  },
+  leg_curl: {
+    id: 'leg_curl', name: '坐姿腿弯举', en: 'Seated Leg Curl',
+    type: 'machine', target: 'lower', bodyweight: false,
+    cues: ['调整靠垫与膝轴对齐', '勾腿至最大限度，顶峰收缩 1 秒', '缓慢回放，不要让配重片落下撞击'],
+    mistakes: ['臀部离开坐垫借力', '回放过快', '摆动借力'],
+    kneeCaution: false
+  },
+  incline_db_press: {
+    id: 'incline_db_press', name: '上斜哑铃卧推', en: 'Incline Dumbbell Bench Press',
+    type: 'free', target: 'upper', bodyweight: false,
+    cues: ['上斜凳 30–45°，哑铃置于肩部两侧', '向上推至手臂接近伸直，哑铃不相撞', '下放至胸部两侧有拉伸感', '肩胛收紧贴凳'],
+    mistakes: ['腰部过度拱起', '下放失控', '肘部过度外展'],
+    kneeCaution: false
+  },
+  neutral_pulldown: {
+    id: 'neutral_pulldown', name: '中立握高位下拉', en: 'Neutral Grip Lat Pulldown',
+    type: 'machine', target: 'upper', bodyweight: false,
+    cues: ['对握把手，大腿固定垫压住', '下拉至上胸部，肩胛下沉后夹', '缓慢回放至手臂伸直，躯干微后仰不超过 15°'],
+    mistakes: ['大幅后仰借力', '拉至颈后', '耸肩'],
+    kneeCaution: false
+  },
+  rear_delt_fly: {
+    id: 'rear_delt_fly', name: '绳索后束划船/反向飞鸟', en: 'Cable Rear Delt Row / Reverse Fly',
+    type: 'cable', target: 'upper', bodyweight: false,
+    cues: ['绳索调至面部高度，双手对握', '向后拉并向两侧展开，肩胛后夹', '肘部保持微屈，缓慢回放'],
+    mistakes: ['耸肩借力', '重量过大导致摆动', '肘伸过直'],
+    kneeCaution: false
+  },
+  side_plank: {
+    id: 'side_plank', name: '侧桥', en: 'Side Plank',
+    type: 'bodyweight', target: 'core', bodyweight: true, perSide: true, timed: true,
+    cues: ['侧卧，前臂撑地，肘在肩正下方', '顶髋至身体成一条直线', '保持呼吸，不要憋气', '难度高可屈膝做'],
+    mistakes: ['髋部下塌', '身体前后旋转', '憋气'],
+    kneeCaution: false
+  },
+  incline_scap_pushup: {
+    id: 'incline_scap_pushup', name: '上斜肩胛俯卧撑', en: 'Incline Scapular Push-Up',
+    type: 'bodyweight', target: 'posture', bodyweight: true,
+    cues: ['手撑上斜平面，手臂伸直不弯曲', '仅做肩胛骨的前引与后缩', '动作慢，感受肩胛滑动'],
+    mistakes: ['屈肘做成俯卧撑', '耸肩', '速度过快'],
+    kneeCaution: false
+  },
+  incline_pushup: {
+    id: 'incline_pushup', name: '上斜俯卧撑', en: 'Incline Push-Up',
+    type: 'bodyweight', target: 'upper', bodyweight: true,
+    cues: ['手撑凳沿，身体成一直线', '下放至胸接近凳面', '推起时核心收紧不塌腰'],
+    mistakes: ['塌腰翘臀', '头部前伸', '幅度不足'],
+    kneeCaution: false
+  },
+  calf_raise: {
+    id: 'calf_raise', name: '自重提踵', en: 'Bodyweight Calf Raise',
+    type: 'bodyweight', target: 'lower', bodyweight: true,
+    cues: ['站立，前脚掌可踩台阶边缘', '提踵至最高点停 1 秒', '缓慢下放至小腿有拉伸感'],
+    mistakes: ['下放过快', '借助弹震', '膝部锁死晃动'],
+    kneeCaution: false
+  },
+  hip_hinge: {
+    id: 'hip_hinge', name: '徒手髋铰链', en: 'Bodyweight Hip Hinge',
+    type: 'bodyweight', target: 'posture', bodyweight: true,
+    cues: ['站立，双手可置于胸前', '屈髋向后推臀，背部平直', '感受腘绳肌拉伸后伸髋还原'],
+    mistakes: ['弓背', '做成深蹲', '膝盖大幅前移'],
+    kneeCaution: false
+  },
+  thoracic_rotation: {
+    id: 'thoracic_rotation', name: '胸椎旋转', en: 'Thoracic Rotation',
+    type: 'bodyweight', target: 'posture', bodyweight: true, perSide: true,
+    cues: ['四点跪撑或侧卧，一手放头后', '肘部向下收再向上打开，旋转胸椎', '骨盆保持稳定不动'],
+    mistakes: ['腰椎代偿旋转', '速度过快', '骨盆翻转'],
+    kneeCaution: false
+  },
+  thoracic_extension: {
+    id: 'thoracic_extension', name: '胸椎伸展', en: 'Thoracic Extension',
+    type: 'bodyweight', target: 'posture', bodyweight: true,
+    cues: ['仰卧泡沫轴于上背部或跪姿手撑凳', '缓慢伸展上背部，头颈放松', '保持 2–3 秒后还原'],
+    mistakes: ['腰椎过伸代偿', '憋气', '动作过猛'],
+    kneeCaution: false
+  },
+  wall_slide: {
+    id: 'wall_slide', name: '靠墙滑手', en: 'Wall Slide',
+    type: 'bodyweight', target: 'posture', bodyweight: true,
+    cues: ['背靠墙站立，头、上背、臀贴墙', '手臂贴墙缓慢上滑再下放', '腰部不要拱起离墙'],
+    mistakes: ['腰部拱起', '手臂离墙', '耸肩'],
+    kneeCaution: false
+  },
+  chin_tuck: {
+    id: 'chin_tuck', name: '仰卧/靠墙下巴回收', en: 'Chin Tuck (Supine or Wall)',
+    type: 'bodyweight', target: 'posture', bodyweight: true,
+    cues: ['仰卧或靠墙，目视前方', '下巴水平向后收，做出“双下巴”', '保持 3–5 秒后放松', '不要低头'],
+    mistakes: ['低头代替回收', '用力过猛', '憋气'],
+    kneeCaution: false
+  },
+  treadmill_walk: {
+    id: 'treadmill_walk', name: '跑步机快走', en: 'Treadmill Brisk Walk',
+    type: 'cardio', target: 'cardio', bodyweight: true,
+    cues: ['坡度 0–3%，速度以能快走为准', '不扶扶手，自然摆臂', '强度：能说完整句子但不能唱歌'],
+    mistakes: ['扶扶手降低强度', '坡度过大', '含胸低头'],
+    kneeCaution: false
+  },
+  elliptical: {
+    id: 'elliptical', name: '椭圆仪', en: 'Elliptical Trainer',
+    type: 'cardio', target: 'cardio', bodyweight: true,
+    cues: ['全脚掌踩实踏板，躯干直立', '手脚协调发力', '强度：能说完整句子但不能唱歌'],
+    mistakes: ['踮脚尖', '身体左右摇晃', '阻力过大硬踩'],
+    kneeCaution: false
+  },
+  stair_climber: {
+    id: 'stair_climber', name: '登山机', en: 'Stair Climber',
+    type: 'cardio', target: 'cardio', bodyweight: true,
+    cues: ['第 5 周后可选，膝部稳定时 5–10 分钟起步', '躯干直立，轻扶扶手保持平衡即可', '全脚掌踩实，步幅适中'],
+    mistakes: ['身体前倾压扶手', '脚尖踩踏', '速度过快'],
+    kneeCaution: false /* V1.4：登山机不再标注 knee；膝部保护由 C7 器械置灰承担 */
+  }
+};
+
+/* V1.4：部位标注全量表（authoritative，2026-09-08）
+ * 20 个非有氧动作全部注入 notes；跑步机/椭圆仪/登山机等有氧器械保持无 notes。
+ * 其余新增部位（hip/core/wrist/ankle/neck/spine）仅作为标签展示，不触发警示细条。 */
+(function annotateNotes() {
+  const map = {
+    goblet_box_squat: ['knee'],
+    db_rdl: ['back'],
+    seated_row: ['back'],
+    chest_press: ['shoulder'],
+    glute_bridge: ['hip'],
+    dead_bug: ['core'],
+    split_squat: ['knee', 'hip'],
+    leg_curl: ['knee'],
+    incline_db_press: ['shoulder', 'wrist'],
+    neutral_pulldown: ['shoulder'],
+    rear_delt_fly: ['shoulder'],
+    side_plank: ['core'],
+    incline_scap_pushup: ['shoulder'],
+    incline_pushup: ['shoulder', 'wrist'],
+    calf_raise: ['ankle'],
+    hip_hinge: ['hip', 'back'],
+    thoracic_rotation: ['spine'],
+    thoracic_extension: ['spine'],
+    wall_slide: ['shoulder'],
+    chin_tuck: ['neck']
+  };
+  for (const id in map) { if (EXERCISES[id]) EXERCISES[id].notes = map[id]; }
+})();
+
+/* V1.3 C3 / V1.4：notes 兼容读法。有 notes 用 notes；缺 notes 时才回退 kneeCaution。
+   登山机自 V1.4 起不再标注部位（其膝部保护由 bodyStatus==='knee' 时的器械置灰承担）。 */
+function exerciseNotes(ex) {
+  if (!ex) return [];
+  if (Array.isArray(ex.notes) && ex.notes.length) return ex.notes;
+  return ex.kneeCaution ? ['knee'] : [];
+}
+function hasBodyNote(ex, part) { return exerciseNotes(ex).indexOf(part) !== -1; }
+
+/* V1.4：部位标签显示字典（全用户可见） */
+const PART_TAG = {
+  knee: '膝', back: '腰背', shoulder: '肩', hip: '髋', core: '核心',
+  wrist: '腕', ankle: '踝', neck: '颈', spine: '胸椎'
+};
+
+/* V1.4 细条边界决策：警示细条仅对高负荷部位触发（其余部位只显示标签） */
+const HIGH_RISK_PARTS = ['knee', 'shoulder', 'back'];
+
+/* V1.4：器械类型中文（列表/换动作自选区/详情行内展示用） */
+const TYPE_CN = { free: '自由重量', machine: '固定器械', bodyweight: '自重', cable: '绳索', cardio: '有氧器械' };
+
+/* V1.4：部位标签视觉识别配置（OpenAI 兼容；4 家预设 + 自定义，BYOK）
+ * 豆包模型名按官方惯例给合理值；不同期/地区命名可能变化，可在设置里自定义模型名。 */
+const VISION_VENDORS = [
+  { id: 'zhipu', name: '智谱 AI', baseUrl: 'https://open.bigmodel.cn/api/paas/v4', model: 'glm-4v-flash' },
+  { id: 'dashscope', name: '通义千问', baseUrl: 'https://dashscope.aliyuncs.com/compatible-mode/v1', model: 'qwen-vl-plus' },
+  { id: 'doubao', name: '豆包', baseUrl: 'https://ark.cn-beijing.volces.com/api/v3', model: 'doubao-1-5-vision-pro-32k-250115' },
+  { id: 'openai', name: 'OpenAI', baseUrl: 'https://api.openai.com/v1', model: 'gpt-4o-mini' },
+  { id: 'custom', name: '自定义', baseUrl: '', model: '' }
+];
+function visionVendorById(id) {
+  return VISION_VENDORS.find(v => v.id === id) || null;
+}
+
+/* V1.4：识别 prompt 文本（OpenAI 兼容 messages 的 text 部分）。从 EXERCISES 自动生成动作清单。 */
+function buildVisionPromptText() {
+  const lines = Object.keys(EXERCISES).map(id => {
+    const ex = EXERCISES[id];
+    const tag = { lower: '下肢', upper: '上肢', core: '核心', posture: '体态', cardio: '有氧' }[ex.target] || ex.target;
+    return id + ': ' + ex.name + '（' + tag + '）';
+  });
+  return '你是一名健身器械识别助手。下面是动作库清单：\n' + lines.join('\n') +
+    '\n\n请判断图中这台健身器械/正在做的动作最接近清单中的哪一项。' +
+    '只返回 JSON，不要输出任何其他文字或代码块包裹，格式为：' +
+    '{"matchId": "动作 id 或 null", "guide": "50-100字中文：这台器械主要练哪里、发力要点、注意"}。' +
+    '如果图片里不是健身器械、或无法判断，matchId 填 null，guide 可写一句简短说明。';
+}
+
+/* V1.4：JSON 容错提取。容忍模型返回 ```json 包裹或前后多余文字，取第一个 { 到最后一个 } 之间的内容。 */
+function extractVisionJson(text) {
+  if (!text) return null;
+  const s = String(text);
+  const a = s.indexOf('{');
+  const b = s.lastIndexOf('}');
+  if (a === -1 || b === -1 || b <= a) return null;
+  let obj;
+  try { obj = JSON.parse(s.slice(a, b + 1)); } catch (e) { return null; }
+  if (!obj || typeof obj !== 'object') return null;
+  return {
+    matchId: (typeof obj.matchId === 'string' && obj.matchId) ? obj.matchId : null,
+    guide: (typeof obj.guide === 'string' && obj.guide) ? obj.guide : ''
+  };
+}
+
+/* V1.4：换动作「自己挑一个」候选——同 target，排除自身与当日计划已含动作 */
+function sameTargetCandidates(exerciseId, takenIds) {
+  const src = EXERCISES[exerciseId];
+  if (!src) return [];
+  return Object.values(EXERCISES).filter(ex =>
+    ex.id !== exerciseId &&
+    ex.target === src.target &&
+    (!takenIds || takenIds.indexOf(ex.id) === -1)
+  );
+}
+
+/* V1.4：加到今日训练的模板字段补齐——取该动作在模板字典中的首条默认
+ * （sets/rir 按当前周档位，rest/perSide/timed 取字典默认；找不到时用保守兜底）。 */
+function planDefaultsFor(exerciseId, weekIndex) {
+  for (const tid of Object.keys(TEMPLATES)) {
+    const tpl = TEMPLATES[tid];
+    const cand = (tpl.exercises || []).find(e => e.exerciseId === exerciseId);
+    if (cand) {
+      const p = planFor(cand, weekIndex || 1);
+      const ex = EXERCISES[exerciseId] || {};
+      return {
+        exerciseId, reps: cand.reps, sets: p.sets, rir: p.rir, rest: cand.rest,
+        main: !!cand.main, perSide: !!cand.perSide || !!ex.perSide, timed: !!cand.timed || !!ex.timed
+      };
+    }
+  }
+  const ex = EXERCISES[exerciseId] || {};
+  return {
+    exerciseId, reps: [8, 12], sets: 2, rir: 3, rest: 60,
+    main: false, perSide: !!ex.perSide, timed: !!ex.timed
+  };
+}
+
+/* 替代动作（同模式同训练目标） */
+const SUBSTITUTES = {
+  goblet_box_squat: ['leg_curl', 'glute_bridge'],
+  split_squat: ['leg_curl', 'glute_bridge'],
+  db_rdl: ['hip_hinge', 'glute_bridge'],
+  chest_press: ['incline_pushup'],
+  incline_db_press: ['chest_press', 'incline_pushup'],
+  seated_row: ['neutral_pulldown'],
+  neutral_pulldown: ['seated_row'],
+  rear_delt_fly: ['seated_row'],
+  leg_curl: ['glute_bridge'],
+  treadmill_walk: ['elliptical'],
+  elliptical: ['treadmill_walk'],
+  stair_climber: ['elliptical', 'treadmill_walk']
+};
+
+/* ============ 训练模板 ============
+ * sets 数组按周阶段给出组数；reps [下限, 上限]；rir 目标；rest 秒
+ */
+const TEMPLATES = {
+  strengthA: {
+    id: 'strengthA', name: '力量A', dayLabel: '力量训练 A', estMin: '50–60 分钟', intensity: '中等',
+    exercises: [
+      { exerciseId: 'goblet_box_squat', reps: [8, 10], sets: [2, 2, 3, 3, 3, 3, 3, 2], rir: [3, 3, 2.5, 2.5, 2.5, 2.5, 2.5, 3], rest: 90, main: true },
+      { exerciseId: 'db_rdl', reps: [8, 10], sets: [2, 2, 3, 3, 3, 3, 3, 2], rir: [3, 3, 2.5, 2.5, 2.5, 2.5, 2.5, 3], rest: 90, main: true },
+      { exerciseId: 'seated_row', reps: [10, 12], sets: [2, 2, 3, 3, 3, 3, 3, 2], rir: [3, 3, 2.5, 2.5, 2.5, 2.5, 2.5, 3], rest: 82, main: true },
+      { exerciseId: 'chest_press', reps: [8, 12], sets: [2, 2, 3, 3, 3, 3, 3, 2], rir: [3, 3, 2.5, 2.5, 2.5, 2.5, 2.5, 3], rest: 82, main: true },
+      { exerciseId: 'glute_bridge', reps: [10, 15], sets: [2, 2, 2, 2, 2, 2, 3, 2], rir: [3, 3, 3, 3, 3, 3, 3, 3], rest: 60, main: false },
+      { exerciseId: 'dead_bug', reps: [6, 10], sets: [2, 2, 2, 2, 2, 2, 3, 2], rir: [3, 3, 3, 3, 3, 3, 3, 3], rest: 52, main: false, perSide: true }
+    ]
+  },
+  strengthB: {
+    id: 'strengthB', name: '力量B', dayLabel: '力量训练 B', estMin: '50–60 分钟', intensity: '中等',
+    exercises: [
+      { exerciseId: 'split_squat', reps: [6, 8], sets: [2, 2, 3, 3, 3, 3, 3, 2], rir: [3, 3, 2.5, 2.5, 2.5, 2.5, 2.5, 3], rest: 90, main: true, perSide: true },
+      { exerciseId: 'leg_curl', reps: [10, 12], sets: [2, 2, 3, 3, 3, 3, 3, 2], rir: [3, 3, 2.5, 2.5, 2.5, 2.5, 2.5, 3], rest: 75, main: true },
+      { exerciseId: 'incline_db_press', reps: [8, 10], sets: [2, 2, 3, 3, 3, 3, 3, 2], rir: [3, 3, 2.5, 2.5, 2.5, 2.5, 2.5, 3], rest: 90, main: true },
+      { exerciseId: 'neutral_pulldown', reps: [8, 12], sets: [2, 2, 3, 3, 3, 3, 3, 2], rir: [3, 3, 2.5, 2.5, 2.5, 2.5, 2.5, 3], rest: 82, main: true },
+      { exerciseId: 'rear_delt_fly', reps: [12, 15], sets: [2, 2, 2, 2, 2, 3, 3, 2], rir: [3, 3, 3, 3, 3, 3, 3, 3], rest: 60, main: false },
+      { exerciseId: 'side_plank', reps: [15, 30], sets: [2, 2, 2, 2, 2, 2, 3, 2], rir: [3, 3, 3, 3, 3, 3, 3, 3], rest: 52, main: false, perSide: true, timed: true }
+    ]
+  },
+  tuesday: {
+    id: 'tuesday', name: '椭圆仪＋体态/自重', dayLabel: '有氧＋体态', estMin: '30–40 分钟', intensity: '轻',
+    cardio: { exerciseId: 'elliptical', minutes: [20, 30], intensityNote: '能说完整句子但不能唱歌' },
+    exercises: [
+      { exerciseId: 'incline_scap_pushup', reps: [8, 12], sets: [2, 2, 2, 2, 2, 2, 2, 2], rir: [3], rest: 60, main: false },
+      { exerciseId: 'glute_bridge', reps: [12, 12], sets: [2, 2, 2, 2, 2, 2, 2, 2], rir: [3], rest: 60, main: false },
+      { exerciseId: 'dead_bug', reps: [6, 8], sets: [2, 2, 2, 2, 2, 2, 2, 2], rir: [3], rest: 52, main: false, perSide: true },
+      { exerciseId: 'calf_raise', reps: [12, 15], sets: [2, 2, 2, 2, 2, 2, 2, 2], rir: [3], rest: 45, main: false }
+    ]
+  },
+  thursday: {
+    id: 'thursday', name: '跑步机快走＋体态/核心', dayLabel: '有氧＋核心', estMin: '30–40 分钟', intensity: '轻',
+    cardio: { exerciseId: 'treadmill_walk', minutes: [20, 30], intensityNote: '坡度 0–3%，不扶扶手；能说完整句子但不能唱歌' },
+    allowRestDay: true,
+    exercises: [
+      { exerciseId: 'incline_pushup', reps: [8, 12], sets: [2, 2, 2, 2, 2, 2, 2, 2], rir: [3], rest: 60, main: false },
+      { exerciseId: 'side_plank', reps: [15, 30], sets: [2, 2, 2, 2, 2, 2, 2, 2], rir: [3], rest: 52, main: false, perSide: true, timed: true },
+      { exerciseId: 'hip_hinge', reps: [10, 10], sets: [2, 2, 2, 2, 2, 2, 2, 2], rir: [3], rest: 60, main: false },
+      { exerciseId: 'thoracic_rotation', reps: [6, 6], sets: [2, 2, 2, 2, 2, 2, 2, 2], rir: [3], rest: 45, main: false, perSide: true }
+    ]
+  },
+  posture: {
+    id: 'posture', name: '体态小训练', dayLabel: '体态小训练', estMin: '8–10 分钟', intensity: '轻',
+    exercises: [
+      { exerciseId: 'chin_tuck', reps: [8, 8], sets: [2, 2, 2, 2, 2, 2, 2, 2], rir: [3], rest: 30, main: false, holdSec: [3, 5] },
+      { exerciseId: 'thoracic_extension', reps: [6, 8], sets: [1, 1, 1, 1, 1, 1, 1, 1], rir: [3], rest: 30, main: false },
+      { exerciseId: 'incline_scap_pushup', reps: [8, 12], sets: [2, 2, 2, 2, 2, 2, 2, 2], rir: [3], rest: 45, main: false },
+      { exerciseId: 'wall_slide', reps: [8, 8], sets: [2, 2, 2, 2, 2, 2, 2, 2], rir: [3], rest: 45, main: false },
+      { exerciseId: 'dead_bug', reps: [6, 6], sets: [1, 1, 1, 1, 1, 1, 1, 1], rir: [3], rest: 45, main: false, perSide: true }
+    ]
+  }
+};
+
+/* ============ 每周排期（V1.1：用户自定义，存 profile.schedule） ============ */
+const DOW_KEYS = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
+const DOW_NAMES = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
+
+const GOALS = [
+  { id: 'fatLoss', label: '减脂' },
+  { id: 'muscle', label: '增肌增力' },
+  { id: 'posture', label: '改善体态' },
+  { id: 'energy', label: '提升精力' },
+  { id: 'habit', label: '恢复运动习惯' }
+];
+
+/* 按首要目标 × 每周天数生成建议排期（V1.2 SPEC A4 映射表）
+   原则：天数越少力量占比越高（力量保本）；天数变化只调有氧天数；力量日不连续超 2 天 */
+function suggestSchedule(goalId, days) {
+  days = days || 5;
+  const base = { mon: 'rest', tue: 'rest', wed: 'rest', thu: 'rest', fri: 'rest', sat: 'rest', sun: 'rest' };
+  const maps = {
+    fatLoss: { // 减脂：2d=1力+1有氧 3d=1力+2有氧 4d=2力+2有氧 5d=2力+3有氧
+      2: { mon: 'strength', thu: 'cardio' },
+      3: { mon: 'cardio', wed: 'strength', fri: 'cardio' },
+      4: { mon: 'cardio', tue: 'strength', thu: 'cardio', fri: 'strength' },
+      5: { mon: 'cardio', tue: 'strength', wed: 'cardio', thu: 'strength', fri: 'cardio' }
+    },
+    energy: { // 提升精力：同减脂
+      2: { mon: 'strength', thu: 'cardio' },
+      3: { mon: 'cardio', wed: 'strength', fri: 'cardio' },
+      4: { mon: 'cardio', tue: 'strength', thu: 'cardio', fri: 'strength' },
+      5: { mon: 'cardio', tue: 'strength', wed: 'cardio', thu: 'strength', fri: 'cardio' }
+    },
+    muscle: { // 增肌增力：2d=2力 3d=3力 4d=3力+1有氧 5d=4力+1有氧
+      2: { mon: 'strength', thu: 'strength' },
+      3: { mon: 'strength', wed: 'strength', fri: 'strength' },
+      4: { mon: 'strength', tue: 'strength', wed: 'cardio', fri: 'strength' },
+      5: { mon: 'strength', tue: 'strength', wed: 'cardio', thu: 'strength', fri: 'strength' }
+    },
+    posture: { // 改善体态：2d=2力 3d=2力+1有氧 4d=3力+1有氧 5d=3力+2有氧
+      2: { mon: 'strength', thu: 'strength' },
+      3: { mon: 'strength', wed: 'cardio', fri: 'strength' },
+      4: { mon: 'strength', tue: 'cardio', thu: 'strength', fri: 'strength' },
+      5: { mon: 'strength', tue: 'cardio', wed: 'strength', thu: 'cardio', fri: 'strength' }
+    },
+    habit: { // 恢复运动习惯：同改善体态
+      2: { mon: 'strength', thu: 'strength' },
+      3: { mon: 'strength', wed: 'cardio', fri: 'strength' },
+      4: { mon: 'strength', tue: 'cardio', thu: 'strength', fri: 'strength' },
+      5: { mon: 'strength', tue: 'cardio', wed: 'strength', thu: 'cardio', fri: 'strength' }
+    }
+  };
+  const m = (maps[goalId] || maps.posture)[days] || maps.posture[5];
+  return Object.assign(base, m);
+}
+function defaultSchedule() { return suggestSchedule('posture'); }
+function trainingDayCount(schedule) { return DOW_KEYS.filter(k => schedule[k] && schedule[k] !== 'rest').length; }
+
+/* V1.3 C1：身体情况三档（onboarding 单选 + 副标） */
+const BODY_OPTIONS = [
+  { id: 'none', label: '没受伤', note: '没有需要留意的旧伤或不适' },
+  { id: 'knee', label: '膝部有伤', note: '膝盖有旧伤或不适，勾选后自动避开伤膝动作' },
+  { id: 'other', label: '其他部位有伤', note: '肩/腰/腕等别处有不适，训练时给你相应提示' }
+];
+
+/* V1.3 C2/D1：档案字段迁移与兜底（就地修改并返回） */
+function normalizeProfile(p) {
+  if (!p) return p;
+  if (p.bodyStatus === undefined) p.bodyStatus = p.kneeNote === 'left' ? 'knee' : (p.kneeNote || 'none');
+  if (p.kneeNote !== undefined) delete p.kneeNote;
+  if (p.bodyStatus !== 'knee' && p.bodyStatus !== 'other') p.bodyStatus = 'none'; // 非法值兜底
+  if (p.scheduleConfirmed === undefined) p.scheduleConfirmed = true; // 旧档案不打扰
+  if (!p.schedule) p.schedule = defaultSchedule();
+  return p;
+}
+function isScheduleConfirmed(profile) { return !!(profile && profile.scheduleConfirmed !== false); }
+
+/* V1.3 C4：膝档自动规避。返回该模板当日的动作清单；knee 且动作带 knee 标注时，
+   取 SUBSTITUTES 中该模板尚未包含的首个替代动作，并打 autoSub/originalId 标记。
+   加载进行中/已完成 session 时直接按存储显示，不回溯替换。 */
+function resolveTemplateExercises(profile, templateId) {
+  const tpl = TEMPLATES[templateId];
+  if (!tpl) return [];
+  const src = tpl.exercises || [];
+  if (!profile || profile.bodyStatus !== 'knee') return src;
+  const taken = src.map(e => e.exerciseId);
+  return src.map(pe => {
+    const ex = EXERCISES[pe.exerciseId];
+    if (!hasBodyNote(ex, 'knee')) return pe;
+    const pick = (SUBSTITUTES[pe.exerciseId] || []).find(id => taken.indexOf(id) === -1);
+    if (!pick) return pe;
+    return Object.assign({}, pe, { exerciseId: pick, originalId: pe.exerciseId, autoSub: true });
+  });
+}
+
+/* 日期→模板解析：力量日 A/B 按周交替，有氧日椭圆仪/跑步机内容交替 */
+function resolveTemplateId(schedule, weekIndex, dow) { // dow 1=周一
+  const type = schedule[DOW_KEYS[dow - 1]];
+  if (!type || type === 'rest') return null;
+  let pos = 0;
+  for (let d = 1; d <= dow; d++) if (schedule[DOW_KEYS[d - 1]] === type) pos++;
+  const oddWeek = weekIndex % 2 === 1;
+  const oddPos = pos % 2 === 1;
+  if (type === 'strength') return (oddWeek === oddPos) ? 'strengthA' : 'strengthB';
+  return oddPos ? 'tuesday' : 'thursday'; // 有氧内容交替（椭圆仪＋体态 / 跑步机＋核心）
+}
+function weekPlan(profile, weekIndex) {
+  const schedule = (profile && profile.schedule) || defaultSchedule();
+  return DOW_KEYS.map((k, i) => ({
+    dow: i + 1, type: schedule[k],
+    templateId: resolveTemplateId(schedule, weekIndex, i + 1)
+  }));
+}
+
+/* 训练类型识别语言（全局统一） */
+const TYPE_META = {
+  strength: { emoji: '💪', label: '力量', cls: 't-strength' },
+  cardio: { emoji: '🚶', label: '有氧', cls: 't-cardio' },
+  posture: { emoji: '🧘', label: '体态', cls: 't-posture' },
+  rest: { emoji: '😴', label: '休息', cls: 't-rest' }
+};
+function templateType(templateId) {
+  if (templateId === 'strengthA' || templateId === 'strengthB') return 'strength';
+  if (templateId === 'posture') return 'posture';
+  if (templateId) return 'cardio';
+  return 'rest';
+}
+
+const PHASES = [
+  { weeks: '第 1–2 周', name: '动作与耐受', text: '所有动作 2 组，剩余次数(RIR) 3：熟悉动作与耐受。' },
+  { weeks: '第 3–4 周', name: '建立训练量', text: '前四个主要动作增至 3 组：建立训练量。' },
+  { weeks: '第 5–7 周', name: '稳定进步', text: '主要动作 3 组，辅助动作 2–3 组：稳定进步。' },
+  { weeks: '第 8 周', name: '恢复与复盘', text: '全部减为 2 组或降重：恢复与复盘。' }
+];
+function phaseName(weekIndex) {
+  if (weekIndex <= 2) return PHASES[0].name;
+  if (weekIndex <= 4) return PHASES[1].name;
+  if (weekIndex <= 7) return PHASES[2].name;
+  return PHASES[3].name;
+}
+
+/* ============ 文案常量（C11：懂你的朋友语气，集中管理） ============ */
+const COPY = {
+  disclaimer: '这是你的个人训练小助手，不是医疗产品。所有训练内容都是「建议」，不构成诊断或治疗方案。如果疼痛加重或出现异常，先停下来，找医生或运动医学专业人士看看。',
+  localOnly: '训练记录和体态照片保存在这台设备的浏览器里，没有账户或云同步。使用 AI 器械识别时，所选照片会发送给你配置的服务商；导出的备份请自行妥善保管。',
+  rirHelp: '剩余次数（RIR）= 一组做完时，你觉得自己还能规范地再做几次。比如还能再做 2 次，就是剩余次数(RIR) 2。数字越接近 0，说明这一组越接近「力竭」——不是一定要练到力竭，按计划里的目标数字来就好。',
+  talkTest: '强度怎么把握？试试说话：能完整说句子、但唱不了歌，就是刚刚好的中等强度，不需要心率表。',
+  redFlagTitle: '🛑 红旗症状提醒',
+  redFlagText: '如果出现：膝关节卡锁、明显肿胀、无法完全伸直、反复打软腿、疼痛持续加重——先停一停，下肢不再自动加重，建议尽快就医或做运动医学评估。照顾自己最重要。',
+  kneeRule: '膝部小贴士：箱式深蹲和分腿蹲以「不痛」为准，大腿平不平行地面不重要；膝盖跟着脚尖方向走；分腿蹲可以单手扶东西。',
+  suggestTag: '建议',
+  photoReminder: '照片有阵子没备份啦，去「设置」导出个 ZIP 存好吧。',
+  weekendNote: '好好休息也是训练的一部分，健身房外的活动咱们不记录。',
+  adviceIsSuggestion: '以下都是建议，不是诊断，你说了算。',
+  /* V1.3 文案 */
+  onbDaysHint: '只选每周练几天即可，课表会按你的目标自动排好。',
+  onbBodyTitle: '有没有需要特别照顾的身体部位？',
+  startDateNote: '我们已按你的目标生成初始课表，稍后可在「计划」页调整。',
+  schedConfirmTitle: '我们按你的目标生成了初始排期',
+  schedConfirmIntro: '每天可点选：力量 / 有氧 / 休息；也可以保留自动生成的样子。',
+  schedConfirmBtn: '确认排期',
+  laterBtn: '稍后再说',
+  machineKneeHint: '膝部有伤：登山机暂不建议，改选椭圆仪、跑步机等低冲击项目。',
+  customKneeHint: '膝部有伤：户外、球类等冲击较大的有氧请量力而行。',
+  autoSubBadge: '已自动替换',
+  bodyTips: {
+    knee: '此动作对膝部负荷较高，如膝部不适请谨慎，训练中可点「换动作」换别的。',
+    shoulder: '此动作对肩部要求较高，肩部有旧伤请谨慎，训练中可点「换动作」换别的。',
+    back: '此动作对腰背要求较高，腰背不适请保持脊柱中立、痛就停。'
+  },
+  graduationTitle: '🎓 恭喜毕业！',
+  graduationText: '8 周计划全部完成，这段坚持真的太棒了！想再来的话，去「设置」重新开始新周期就好。',
+  celebration: '今天也辛苦了，干得漂亮！',
+  shareHint: '长按图片保存，或点下方按钮下载',
+  shareFooter: '个人健身训练工作台',
+  emptySessions: '还没有训练记录，从今天开始第一节吧。',
+  /* 建议卡（结论 + 一句原因） */
+  advice: {
+    plan: { title: '状态在线，按计划来！', detail: '睡眠和精力都不错，正常执行就好。' },
+    sleep: { title: '昨晚没睡好吧', detail: '睡了不到 6 小时，建议主要动作保持重量、少做 1 组，别硬撑。' },
+    energy: { title: '今天有点累呀', detail: '咱们轻松点，25 分钟精简模式搞定，动了就是赢。' },
+    sore: { title: '浑身酸痛对吧', detail: '今天不加重，辅助动作可以少做一点，恢复优先。' },
+    knee: { title: '膝部有点闹脾气', detail: '疼痛到 3 分以上啦，下肢今天不加重，换无痛动作或缩小幅度，上肢照常练。' }
+  },
+  /* 下周建议 */
+  nextWeek: {
+    redFlag: '出现红旗症状：下肢先不加重，建议找医生或运动医学专业人士看看。',
+    kneeHigh: '膝部还在闹意见：下肢保持重量，必要时换动作或缩小幅度。',
+    manySkipped: '这周跳过有点多：状态差的日子试试 25 分钟精简模式，比全跳过好。',
+    lowSleep: '睡眠有点欠账：先把觉补回来，训练以完成量为主、暂不加重。',
+    canProgress: n => '有 ' + n + ' 个动作可以进阶啦：下周试着加点重量或次数。',
+    allGood: '一切顺利，按计划进入下一周就好。'
+  },
+  /* V1.4 文案（换动作 / 加到今天 / 拍器械识别） */
+  swapIntro: '仅本次训练生效，不改变未来计划',
+  swapRecTitle: '推荐替代',
+  swapPickTitle: '自己挑一个（同部位）',
+  swapPickEmpty: '同部位暂无其他动作可选',
+  addTodayBtn: '加到今天的训练',
+  addTodayNone: '今天还没开始训练，开始后可加入',
+  addTodayDone: '已加入今日训练，去「今天」页继续',
+  visionBtn: '📷 拍器械识别',
+  visionLoading: '识别中… 约需几秒',
+  visionIntro: '拍一张器械照片，AI 帮你认出最接近哪个动作，并附发力要点。需要自带 API Key（BYOK），在下方配置好后即可使用。',
+  visionNoKeyTitle: '先配置 AI 识别',
+  visionNoKeyText: '还没配 API Key。去「设置」里选厂商、填上你自己的 Key 就能用了。',
+  visionSetupBtn: '去设置页配置',
+  visionManualFallback: '也可以不用 AI：直接在动作库里找到你的器械看详情',
+  visionPrivacy: '照片识别时，图片会发送给你所选的服务商；Key 只存这台设备。',
+  visionDisclaimer: '仅供参考——识别结果可能并非该器械的精准用法',
+  visionHitTip: '为你找到了最接近的动作：',
+  visionNoMatch: '没认出这台器械。下面是 AI 的原话，仅供参考：',
+  visionGoLibrary: '去动作库手动找找',
+  visionErrAuth: '识别失败：API Key 无效或没权限（401/403），去设置检查一下 Key，或稍后再试。',
+  visionErrRate: '识别失败：调用太频繁或额度用尽（429），歇一会儿再试。',
+  visionErrServer: '识别失败：服务商那边出错了（5xx），稍后再试。',
+  visionErrTimeout: '识别超时了，网络不太稳，稍后再试。',
+  visionErrNet: '识别失败：网络异常，检查一下网络再试。',
+  visionErrGeneric: '识别失败：出了点小状况，稍后再试。',
+  visionModelNote: '想换模型名可点开自定义（不同版本的模型命名会有差异）。'
+};
+
+/* ============ 分享卡鼓励语料（D12：4 桶，桶内随机） ============ */
+const ENCOURAGE = {
+  full: [ // 全勤 5/5
+    '五天全勤！你对自己的承诺，一分都没打折。',
+    '这一周满分收官，稳稳的你最了不起。',
+    '全勤周达成！把「坚持」两个字活成了日常。',
+    '一次不落，这份自律值得给自己鼓个掌。',
+    '完美的一周，身体会记住你的每一份认真。'
+  ],
+  most: [ // 多数完成 3–4
+    '大多数时候都在场，这就是进步的样子。',
+    '这周练得扎实，漏掉的那次就当给身体放个假。',
+    '三四次训练落袋为安，节奏越来越稳了。',
+    '不错的完成度！你看，习惯正在长出来。',
+    '忙碌里还保住了训练，你已经赢过昨天的自己。'
+  ],
+  few: [ // 少量 1–2
+    '哪怕只来了一两次，也比停在原地强。',
+    '这周有点难对吧？没关系，动过的那次算数。',
+    '次数不多，但你没有放弃，这就够了。',
+    '忙乱的一周里还想着训练，已经很棒。',
+    '一点点也算数，下周咱们慢慢来。'
+  ],
+  back: [ // 断周回归（上周 0 本周有）
+    '欢迎回来！重新站上垫子的这一刻最难得。',
+    '休息够了再出发，回来就是胜利。',
+    '断了一周又怎样？你回来了，这就值得庆祝。',
+    '重新开始从来都不丢人，反而很勇敢。',
+    '好久不见！这一次，咱们稳稳地走。'
+  ]
+};
+function pickEncouragement(done, planned, lastWeekDone, rand) {
+  let bucket;
+  if (done >= planned && planned > 0) bucket = 'full';
+  else if (lastWeekDone === 0 && done > 0) bucket = 'back';
+  else if (done >= 3) bucket = 'most';
+  else bucket = 'few';
+  const arr = ENCOURAGE[bucket];
+  const r = (typeof rand === 'function') ? rand() : Math.random();
+  return { bucket, text: arr[Math.min(arr.length - 1, Math.floor(r * arr.length))] };
+}
+
+/* RIR 选项 */
+const RIR_OPTIONS = ['0', '1', '2', '3', '4', '5+'];
+
+/* 有氧器械（仅健身房内三项） */
+const CARDIO_MACHINES = ['treadmill_walk', 'elliptical', 'stair_climber'];
+
+/* V1.5 ③：分享卡品牌署名模板（{name} 替换为客户名；客户名留空时回退默认 COPY.shareFooter） */
+const BRAND_TEMPLATES = [
+  { id: 'butler', text: '{name}的健身管家' },
+  { id: 'coach', text: '{name}的私人助教' },
+  { id: 'buddy', text: '{name}的陪练搭子' }
+];
+
+/* V1.5 ⑤：客户自定义有氧四固定预设（不可自由命名；激活存 settings.customCardio id 数组） */
+const CUSTOM_CARDIO_PRESETS = [
+  { id: 'outdoor', name: '户外' },
+  { id: 'swim', name: '游泳' },
+  { id: 'cycle', name: '骑行' },
+  { id: 'ball', name: '球类' }
+];
+
+/* 红旗症状选项 */
+const RED_FLAG_ITEMS = ['卡锁', '明显肿胀', '无法完全伸直', '反复打软腿', '持续加重'];
+
+/* 工具：取某周某模板条目的组数与目标 RIR */
+function planFor(templateEntry, weekIndex) {
+  const w = Math.min(Math.max(weekIndex, 1), 8);
+  const sets = Array.isArray(templateEntry.sets) ? templateEntry.sets[w - 1] : templateEntry.sets;
+  const rirArr = templateEntry.rir;
+  const rir = rirArr.length >= 8 ? rirArr[w - 1] : rirArr[0];
+  return { sets, rir };
+}
+
+</script>
+<script>
+/* db.js — IndexedDB Promise 封装 + JSON/ZIP 导入导出 */
+'use strict';
+
+const DB_NAME = 'fitness-workbench';
+const DB_VERSION = 1;
+const SCHEMA_VERSION = '1.0';
+const STORES = ['profile', 'sessions', 'measurements', 'photos', 'settings'];
+
+let _dbPromise = null;
+
+function openDB() {
+  if (_dbPromise) return _dbPromise;
+  _dbPromise = new Promise((resolve, reject) => {
+    const req = indexedDB.open(DB_NAME, DB_VERSION);
+    req.onupgradeneeded = (e) => {
+      const db = e.target.result;
+      if (!db.objectStoreNames.contains('profile')) db.createObjectStore('profile');
+      if (!db.objectStoreNames.contains('sessions')) db.createObjectStore('sessions', { keyPath: 'id' });
+      if (!db.objectStoreNames.contains('measurements')) db.createObjectStore('measurements', { keyPath: 'id' });
+      if (!db.objectStoreNames.contains('photos')) db.createObjectStore('photos', { keyPath: 'id' });
+      if (!db.objectStoreNames.contains('settings')) db.createObjectStore('settings');
+    };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+  return _dbPromise;
+}
+
+function tx(db, store, mode, fn) {
+  return new Promise((resolve, reject) => {
+    const t = db.transaction(store, mode);
+    const s = t.objectStore(store);
+    let result;
+    const out = fn(s);
+    if (out && out.onsuccess !== undefined) {
+      out.onsuccess = () => { result = out.result; };
+    }
+    t.oncomplete = () => resolve(result);
+    t.onerror = () => reject(t.error);
+    t.onabort = () => reject(t.error);
+  });
+}
+
+const DB = {
+  async get(store, key) {
+    const db = await openDB();
+    return tx(db, store, 'readonly', s => s.get(key));
+  },
+  async getAll(store) {
+    const db = await openDB();
+    return tx(db, store, 'readonly', s => s.getAll());
+  },
+  async put(store, value, key) {
+    const db = await openDB();
+    return tx(db, store, 'readwrite', s => key !== undefined ? s.put(value, key) : s.put(value));
+  },
+  async del(store, key) {
+    const db = await openDB();
+    return tx(db, store, 'readwrite', s => s.delete(key));
+  },
+  async clear(store) {
+    const db = await openDB();
+    return tx(db, store, 'readwrite', s => s.clear());
+  },
+  async clearAll() {
+    for (const s of STORES) await DB.clear(s);
+  }
+};
+
+function uuid() {
+  if (crypto.randomUUID) return crypto.randomUUID();
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+    const r = Math.random() * 16 | 0;
+    return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+  });
+}
+
+/* ============ 档案 / 设置快捷访问 ============ */
+async function getProfile() { return DB.get('profile', 'me'); }
+async function saveProfile(p) { p.updatedAt = Date.now(); return DB.put('profile', p, 'me'); }
+
+async function getSettings() {
+  let s = await DB.get('settings', 'app');
+  if (!s) {
+    s = { restTimerDefault: 90, weightIncrement: 2.5, lastPhotoExportAt: null, lastBackupAt: null, schemaVersion: SCHEMA_VERSION, ignoredAdvice: [], vision: null, shareBrandName: '', shareBrandTemplate: 0, theme: 'cream', customCardio: [], mainCardio: null, rirHelpDate: null };
+    await DB.put('settings', s, 'app');
+  } else {
+    // V1.4/1.5：旧数据读不到新字段时逐一兜底（就地补齐不持久化，保存时才写回）
+    if (s.vision === undefined) s.vision = null;
+    if (s.shareBrandName === undefined) s.shareBrandName = '';
+    if (s.shareBrandTemplate === undefined) s.shareBrandTemplate = 0;
+    if (s.theme === undefined) s.theme = 'cream';
+    if (s.customCardio === undefined) s.customCardio = [];
+    if (s.mainCardio === undefined) s.mainCardio = null;
+    if (s.rirHelpDate === undefined) s.rirHelpDate = null;
+  }
+  return s;
+}
+async function saveSettings(s) { return DB.put('settings', s, 'app'); }
+
+/* ============ JSON 导出 / 导入 ============ */
+async function exportJSON() {
+  const [profile, sessions, measurements, settings] = await Promise.all([
+    getProfile(), DB.getAll('sessions'), DB.getAll('measurements'), getSettings()
+  ]);
+  const weeklyReviews = buildWeeklyReviews(sessions);
+  const settingsOut = Object.assign({}, settings, { lastBackupAt: Date.now() });
+  await saveSettings(settingsOut);
+  return {
+    schemaVersion: SCHEMA_VERSION,
+    exportedAt: new Date().toISOString(),
+    sourceDevice: navigator.userAgent || 'unknown',
+    profile: profile || null,
+    sessions: sessions || [],
+    measurements: measurements || [],
+    weeklyReviews
+    // 照片不进 JSON 备份（决策 7）
+  };
+}
+
+function validateImport(obj) {
+  if (!obj || typeof obj !== 'object') return '文件不是有效的 JSON 对象';
+  if (obj.schemaVersion !== SCHEMA_VERSION) return 'schemaVersion 不匹配（期望 ' + SCHEMA_VERSION + '，实际 ' + (obj.schemaVersion || '缺失') + '）';
+  if (!Array.isArray(obj.sessions)) return 'sessions 结构缺失或不是数组';
+  if (!Array.isArray(obj.measurements)) return 'measurements 结构缺失或不是数组';
+  return null;
+}
+
+/* 冲突不合并：导入即覆盖（调用方需先确认） */
+async function importJSON(obj) {
+  const err = validateImport(obj);
+  if (err) throw new Error(err);
+  await DB.clear('sessions');
+  await DB.clear('measurements');
+  await DB.clear('profile');
+  if (obj.profile) await DB.put('profile', obj.profile, 'me');
+  for (const s of obj.sessions) if (s && s.id) await DB.put('sessions', s);
+  for (const m of obj.measurements) if (m && m.id) await DB.put('measurements', m);
+}
+
+/* ============ 简易 ZIP（STORED 无压缩）============ */
+const CRC_TABLE = (() => {
+  const t = new Uint32Array(256);
+  for (let n = 0; n < 256; n++) {
+    let c = n;
+    for (let k = 0; k < 8; k++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+    t[n] = c >>> 0;
+  }
+  return t;
+})();
+
+function crc32(buf) {
+  let c = 0xFFFFFFFF;
+  for (let i = 0; i < buf.length; i++) c = CRC_TABLE[(c ^ buf[i]) & 0xFF] ^ (c >>> 8);
+  return (c ^ 0xFFFFFFFF) >>> 0;
+}
+
+/* entries: [{name: string, data: Uint8Array}] → Uint8Array (zip) */
+function buildZip(entries) {
+  const enc = new TextEncoder();
+  const chunks = [];
+  const central = [];
+  let offset = 0;
+  const dosTime = 0, dosDate = ((2026 - 1980) << 9) | (1 << 5) | 1;
+
+  for (const e of entries) {
+    const nameBytes = enc.encode(e.name);
+    const crc = crc32(e.data);
+    const size = e.data.length;
+    const lh = new DataView(new ArrayBuffer(30));
+    lh.setUint32(0, 0x04034b50, true);
+    lh.setUint16(4, 20, true);          // version needed
+    lh.setUint16(6, 0x0800, true);      // UTF-8 flag
+    lh.setUint16(8, 0, true);           // STORED
+    lh.setUint16(10, dosTime, true);
+    lh.setUint16(12, dosDate, true);
+    lh.setUint32(14, crc, true);
+    lh.setUint32(18, size, true);
+    lh.setUint32(22, size, true);
+    lh.setUint16(26, nameBytes.length, true);
+    lh.setUint16(28, 0, true);
+    chunks.push(new Uint8Array(lh.buffer), nameBytes, e.data);
+
+    const ch = new DataView(new ArrayBuffer(46));
+    ch.setUint32(0, 0x02014b50, true);
+    ch.setUint16(4, 20, true);
+    ch.setUint16(6, 20, true);
+    ch.setUint16(8, 0x0800, true);
+    ch.setUint16(10, 0, true);
+    ch.setUint16(12, dosTime, true);
+    ch.setUint16(14, dosDate, true);
+    ch.setUint32(16, crc, true);
+    ch.setUint32(20, size, true);
+    ch.setUint32(24, size, true);
+    ch.setUint16(28, nameBytes.length, true);
+    ch.setUint32(42, offset, true);
+    central.push(new Uint8Array(ch.buffer), nameBytes);
+
+    offset += 30 + nameBytes.length + size;
+  }
+
+  let cdSize = 0;
+  for (const c of central) cdSize += c.length;
+  const eocd = new DataView(new ArrayBuffer(22));
+  eocd.setUint32(0, 0x06054b50, true);
+  eocd.setUint16(8, entries.length, true);
+  eocd.setUint16(10, entries.length, true);
+  eocd.setUint32(12, cdSize, true);
+  eocd.setUint32(16, offset, true);
+
+  let total = offset + cdSize + 22;
+  const out = new Uint8Array(total);
+  let pos = 0;
+  for (const c of chunks) { out.set(c, pos); pos += c.length; }
+  for (const c of central) { out.set(c, pos); pos += c.length; }
+  out.set(new Uint8Array(eocd.buffer), pos);
+  return out;
+}
+
+/* 导出照片 ZIP */
+async function exportPhotosZip() {
+  const photos = await DB.getAll('photos');
+  if (!photos.length) throw new Error('没有可导出的照片');
+  const entries = [];
+  for (const p of photos) {
+    const buf = new Uint8Array(await p.blob.arrayBuffer());
+    const ext = (p.blob.type && p.blob.type.includes('png')) ? 'png' : 'jpg';
+    entries.push({ name: p.date + '_' + p.view + '_' + p.id.slice(0, 8) + '.' + ext, data: buf });
+  }
+  const zip = buildZip(entries);
+  const s = await getSettings();
+  s.lastPhotoExportAt = Date.now();
+  await saveSettings(s);
+  return new Blob([zip], { type: 'application/zip' });
+}
+
+/* 触发浏览器下载 */
+function downloadBlob(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 1000);
+}
+
+</script>
+<script>
+/* engine.js — 规则引擎：双重进阶、当日减量、膝部安全/红旗、周报计算 */
+'use strict';
+
+/* 归一化 RIR：'5+' → 5 */
+function rirVal(r) {
+  if (r === '5+' || r === 5 || r === '5') return 5;
+  const n = parseInt(r, 10);
+  return isNaN(n) ? null : n;
+}
+
+function isLowerBody(exerciseId) {
+  const ex = EXERCISES[exerciseId];
+  return ex && ex.target === 'lower';
+}
+
+/* ============ 当日减量建议卡 ============
+ * readiness: {sleepHours, energy1to5, fatigue1to5, kneePain0to10, sore, note}
+ * template: 今日模板
+ * 返回 [{id, kind, title, detail, action}]：title=结论，detail=一句原因
+ */
+function readinessAdvice(readiness, template) {
+  const out = [];
+  if (!readiness) return out;
+  const isStrength = template.id === 'strengthA' || template.id === 'strengthB';
+  const C = COPY.advice;
+
+  if (readiness.kneePain0to10 >= 3) {
+    out.push({ id: 'knee', kind: 'knee', title: C.knee.title, detail: C.knee.detail, action: 'knee' });
+  }
+  if (readiness.sleepHours !== null && readiness.sleepHours < 6 && isStrength) {
+    out.push({ id: 'sleep', kind: 'reduceSet', title: C.sleep.title, detail: C.sleep.detail, action: 'reduceSet' });
+  }
+  if ((readiness.energy1to5 !== null && readiness.energy1to5 <= 2) ||
+      (readiness.fatigue1to5 !== null && readiness.fatigue1to5 >= 4)) {
+    out.push({ id: 'energy', kind: 'shortMode', title: C.energy.title, detail: C.energy.detail, action: 'shortMode' });
+  }
+  if (readiness.sore) {
+    out.push({ id: 'sore', kind: 'sore', title: C.sore.title, detail: C.sore.detail, action: 'sore' });
+  }
+  if (!out.length) {
+    out.push({ id: 'plan', kind: 'plan', title: C.plan.title, detail: C.plan.detail, action: 'plan' });
+  }
+  return out;
+}
+
+/* 应用减量建议到本次执行计划（接受建议时调用） */
+function applyAdviceToPlan(planExercises, adviceAction) {
+  return planExercises.map(p => {
+    const q = Object.assign({}, p);
+    if (adviceAction === 'reduceSet' && q.main && q.sets > 1) q.sets -= 1;
+    if (adviceAction === 'shortMode') q.sets = Math.min(q.sets, 2);
+    if (adviceAction === 'sore' && !q.main && q.sets > 1) q.sets -= 1;
+    return q;
+  });
+}
+
+/* ============ 双重进阶 ============
+ * history: 同一动作历史 session 记录（新→旧），元素 {sets:[{plannedReps,reps,rir,weightKg}], weekIndex}
+ * repRange: [min,max]，exercise: EXERCISES 条目
+ * 返回 {action: 'add'|'keep'|'reduce'|'reduceSet'|'substitute'|'bodyweightUp'|null, deltaKg, text}
+ */
+function progressionAdvice(exerciseId, repRange, history) {
+  const ex = EXERCISES[exerciseId];
+  if (!ex || ex.type === 'cardio') return null;
+  const done = history.filter(h => h.sets && h.sets.length && h.sets.some(s => s.reps !== null && s.reps !== undefined));
+  if (!done.length) return null;
+
+  const last = done[0];
+  const lastSets = last.sets.filter(s => s.reps !== null && s.reps !== undefined);
+  if (!lastSets.length) return null;
+  const avgRir = avg(lastSets.map(s => rirVal(s.rir)).filter(v => v !== null));
+  const allAtUpper = lastSets.every(s => s.reps >= repRange[1]);
+  const anyBelowLower = lastSets.some(s => s.reps < repRange[0]);
+  const weight = lastSets[lastSets.length - 1].weightKg || 0;
+
+  // 膝部安全由 session 层 kneeLocked 控制，这里仅生成基础建议
+  if (anyBelowLower) {
+    if (ex.bodyweight) {
+      return { action: 'reduce', deltaKg: 0, text: '上次未达次数下限：建议减少每组次数目标或缩短保持时长，先保证动作质量。' };
+    }
+    const newW = Math.max(0, weight - 2.5);
+    return { action: 'reduce', deltaKg: -2.5, text: '上次未达次数下限：建议下次减重 2.5kg（至 ' + fmtKg(newW) + '），或减少 1 组，或替换动作。' };
+  }
+
+  if (allAtUpper && avgRir !== null && avgRir <= 0.5) {
+    return { action: 'keep', deltaKg: 0, text: '已达目标次数但基本练不动了（剩余次数≈0）：建议保持当前重量，等下次剩余次数回升再进阶。' };
+  }
+
+  if (allAtUpper && (avgRir === null || avgRir >= 2)) {
+    if (done.length >= 2) {
+      const prev = done[1].sets.filter(s => s.reps !== null && s.reps !== undefined);
+      const prevAllUpper = prev.length && prev.every(s => s.reps >= repRange[1]);
+      const prevAvgRir = avg(prev.map(s => rirVal(s.rir)).filter(v => v !== null));
+      if (prevAllUpper && (prevAvgRir === null || prevAvgRir >= 2)) {
+        if (ex.bodyweight) {
+          if (avgRir !== null && avgRir >= 3) {
+            return { action: 'bodyweightUp', deltaKg: 0, text: '连续两次达上限且剩余次数≥3：建议先增加每组次数或延长保持时长。' };
+          }
+          return { action: 'keep', deltaKg: 0, text: '连续两次达上限：建议保持当前次数，剩余次数≥3 后再加次数/时长。' };
+        }
+        return { action: 'add', deltaKg: 2.5, text: '连续两次达次数上限且剩余次数≥2：建议下次 +2.5kg（至 ' + fmtKg(weight + 2.5) + '）。' };
+      }
+    }
+    return { action: 'keep', deltaKg: 0, text: '本次已达上限：继续保持，连续两次达标后将建议加重。' };
+  }
+
+  return { action: 'keep', deltaKg: 0, text: '按计划保持当前重量与次数目标。' };
+}
+
+function avg(arr) { return arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : null; }
+function fmtKg(n) { return (Math.round(n * 10) / 10) + 'kg'; }
+
+/* ============ 膝部红旗 ============ */
+function hasRedFlag(session) {
+  if (!session) return false;
+  if (session.postFeedback && session.postFeedback.redFlags && session.postFeedback.redFlags.length) return true;
+  return (session.exercises || []).some(e => e.redFlags && e.redFlags.length);
+}
+
+/* 最近是否有红旗（用于停止下肢自动进阶） */
+function recentRedFlag(sessions, withinDays) {
+  const cutoff = Date.now() - withinDays * 86400000;
+  return sessions.some(s => new Date(s.date).getTime() >= cutoff && hasRedFlag(s));
+}
+
+/* ============ 同动作历史（跨 session 提取） ============ */
+function exerciseHistory(sessions, exerciseId, beforeDate) {
+  const out = [];
+  const sorted = sessions.slice().sort((a, b) => b.date.localeCompare(a.date));
+  for (const s of sorted) {
+    if (beforeDate && s.date >= beforeDate) continue;
+    const hit = (s.exercises || []).find(e => e.exerciseId === exerciseId);
+    if (hit) out.push({ date: s.date, weekIndex: s.weekIndex, sets: hit.sets || [] });
+  }
+  return out;
+}
+
+/* ============ 周报 ============
+ * 返回 {planVsActual, performances, progressions, cardio, knee, recovery, nextWeek[]}
+ */
+function buildWeeklyReviews(sessions) {
+  // 按 ISO 周分组并生成全部周的回顾（用于导出）
+  const byWeek = {};
+  for (const s of sessions) {
+    const key = s.date.slice(0, 8) + ''; // 粗分组由调用方细化；导出用整体计算
+    void key;
+  }
+  return computeWeeklyReview(sessions, null);
+}
+
+function computeWeeklyReview(sessions, weekStartDate /* 'YYYY-MM-DD' 或 null=最近7天 */, plannedDays) {
+  const planned = plannedDays || 5;
+  let start, end;
+  if (weekStartDate) {
+    start = new Date(weekStartDate + 'T00:00:00');
+  } else if (sessions.length) {
+    const latest = sessions.map(s => s.date).sort().pop();
+    start = new Date(latest + 'T00:00:00');
+    start.setDate(start.getDate() - 6);
+  } else {
+    start = new Date();
+  }
+  end = new Date(start); end.setDate(end.getDate() + 7);
+  const inRange = sessions.filter(s => {
+    const d = new Date(s.date + 'T12:00:00');
+    return d >= start && d < end;
+  });
+
+  // 计划 vs 实际（E13：分母=实际排期训练日数）
+  const planVsActual = { completed: 0, partial: 0, skipped: 0, planned };
+  for (const s of inRange) {
+    if (s.status === '已完成') planVsActual.completed++;
+    else if (s.status === '部分完成') planVsActual.partial++;
+    else if (s.status === '已跳过') planVsActual.skipped++;
+  }
+
+  // 动作表现与变化（A/B 各动作最近一次）
+  const perfMap = {};
+  const sorted = inRange.slice().sort((a, b) => a.date.localeCompare(b.date));
+  for (const s of sorted) {
+    for (const e of (s.exercises || [])) {
+      const sets = (e.sets || []).filter(x => x.reps !== null && x.reps !== undefined);
+      if (!sets.length) continue;
+      const maxW = Math.max.apply(null, sets.map(x => x.weightKg || 0));
+      const totalReps = sets.reduce((a, x) => a + (x.reps || 0), 0);
+      perfMap[e.exerciseId] = perfMap[e.exerciseId] || [];
+      perfMap[e.exerciseId].push({ date: s.date, maxW, totalReps, sets: sets.length });
+    }
+  }
+  const performances = Object.keys(perfMap).map(id => {
+    const arr = perfMap[id];
+    const last = arr[arr.length - 1];
+    const first = arr[0];
+    return {
+      exerciseId: id, name: EXERCISES[id] ? EXERCISES[id].name : id,
+      last, change: arr.length > 1 ? { dW: last.maxW - first.maxW, dReps: last.totalReps - first.totalReps } : null
+    };
+  });
+
+  // 进阶/保持/减量列表（含触发原因）
+  const progressions = [];
+  const doneStrength = sessions.filter(s => s.status === '已完成' || s.status === '部分完成');
+  const seen = {};
+  for (const s of doneStrength.slice().sort((a, b) => b.date.localeCompare(a.date))) {
+    const tpl = TEMPLATES[s.templateId];
+    if (!tpl || !tpl.exercises) continue;
+    for (const pe of tpl.exercises) {
+      if (seen[pe.exerciseId]) continue;
+      seen[pe.exerciseId] = true;
+      const hist = exerciseHistory(sessions, pe.exerciseId, null);
+      const adv = progressionAdvice(pe.exerciseId, pe.reps, hist);
+      if (adv) {
+        const cat = adv.action === 'add' || adv.action === 'bodyweightUp' ? '加重/进阶'
+          : adv.action === 'reduce' || adv.action === 'reduceSet' || adv.action === 'substitute' ? '减量' : '保持';
+        progressions.push({ exerciseId: pe.exerciseId, name: EXERCISES[pe.exerciseId].name, category: cat, reason: adv.text });
+      }
+    }
+  }
+
+  // 有氧统计
+  const cardio = { totalMin: 0, machines: {} };
+  for (const s of inRange) {
+    if (s.cardio && s.cardio.minutes) {
+      cardio.totalMin += s.cardio.minutes;
+      const m = s.cardio.machine;
+      cardio.machines[m] = (cardio.machines[m] || 0) + s.cardio.minutes;
+    }
+  }
+
+  // 膝部趋势
+  const knee = { points: [], redFlag: false };
+  for (const s of inRange.slice().sort((a, b) => a.date.localeCompare(b.date))) {
+    if (s.readiness && s.readiness.kneePain0to10 !== null && s.readiness.kneePain0to10 !== undefined) {
+      knee.points.push({ date: s.date, pain: s.readiness.kneePain0to10 });
+    }
+    if (hasRedFlag(s)) knee.redFlag = true;
+  }
+
+  // 睡眠/精力观察（不推断因果）
+  const rec = { sleepAvg: null, energyAvg: null, note: '' };
+  const sleeps = inRange.map(s => s.readiness && s.readiness.sleepHours).filter(v => v !== null && v !== undefined);
+  const energies = inRange.map(s => s.readiness && s.readiness.energy1to5).filter(v => v !== null && v !== undefined);
+  rec.sleepAvg = avg(sleeps);
+  rec.energyAvg = avg(energies);
+  const doneCount = planVsActual.completed + planVsActual.partial;
+  if (sleeps.length >= 2) {
+    const good = inRange.filter(s => s.readiness && s.readiness.sleepHours >= 7);
+    const goodDone = good.filter(s => s.status === '已完成').length;
+    rec.note = '观察：睡眠≥7小时的 ' + good.length + ' 次训练中完成 ' + goodDone + ' 次；本周共完成/部分完成 ' + doneCount + ' 次。（仅为观察描述，不代表因果关系）';
+  } else {
+    rec.note = '本周共完成/部分完成 ' + doneCount + ' 次训练。';
+  }
+
+  // 下周建议（最多 3 项，朋友语气）
+  const NW = COPY.nextWeek;
+  const nextWeek = [];
+  if (knee.redFlag) nextWeek.push(NW.redFlag);
+  else if (knee.points.length && knee.points[knee.points.length - 1].pain >= 3) {
+    nextWeek.push(NW.kneeHigh);
+  }
+  if (planVsActual.skipped >= 2) nextWeek.push(NW.manySkipped);
+  if (rec.sleepAvg !== null && rec.sleepAvg < 6.5) nextWeek.push(NW.lowSleep);
+  const adds = progressions.filter(p => p.category === '加重/进阶');
+  if (adds.length && nextWeek.length < 3) nextWeek.push(NW.canProgress(adds.length));
+  if (!nextWeek.length) nextWeek.push(NW.allGood);
+
+  return { planVsActual, performances, progressions, cardio, knee, recovery: rec, nextWeek: nextWeek.slice(0, 3) };
+}
+
+</script>
+<script>
+/* app.js — 路由 + 五个页面渲染 + 事件（V1.1） */
+'use strict';
+
+/* ============ 工具 ============ */
+const $ = sel => document.querySelector(sel);
+const $$ = sel => Array.from(document.querySelectorAll(sel));
+function esc(s) {
+  return String(s === null || s === undefined ? '' : s).replace(/[&<>"']/g,
+    c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+function fmtDate(d) {
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+function todayStr() { return fmtDate(new Date()); }
+function dowOf(dateStr) { // 1=周一 ... 7=周日
+  const d = new Date(dateStr + 'T12:00:00');
+  return d.getDay() === 0 ? 7 : d.getDay();
+}
+function addDays(dateStr, n) {
+  const d = new Date(dateStr + 'T12:00:00');
+  d.setDate(d.getDate() + n);
+  return fmtDate(d);
+}
+function currentWeekIndex(profile) {
+  if (!profile || !profile.chosenStartDate) return 1;
+  const start = new Date(profile.chosenStartDate + 'T00:00:00');
+  const diff = Math.floor((Date.now() - start.getTime()) / 86400000);
+  return Math.min(Math.max(Math.floor(diff / 7) + 1, 1), 8);
+}
+function weekStartOf(profile, weekIndex) {
+  return addDays(profile.chosenStartDate, (weekIndex - 1) * 7);
+}
+function vibrate(pattern) {
+  try { if (navigator.vibrate) navigator.vibrate(pattern); } catch (e) { /* 兜底忽略 */ }
+}
+
+/* 🔥 连续完成天数（已完成/部分完成计） */
+function computeStreak(sessions) {
+  const done = new Set(sessions.filter(s => s.status === '已完成' || s.status === '部分完成').map(s => s.date));
+  let cursor = todayStr();
+  if (!done.has(cursor)) cursor = addDays(cursor, -1); // 今天还没练不算断
+  let n = 0;
+  while (done.has(cursor)) { n++; cursor = addDays(cursor, -1); }
+  return n;
+}
+
+/* 🎓 毕业：第 8 周排期内所有训练日全部「已完成」 */
+function isGraduated(profile, sessions) {
+  const start = weekStartOf(profile, 8);
+  const plan = weekPlan(profile, 8);
+  const doneDates = new Set(sessions.filter(s => s.status === '已完成').map(s => s.date));
+  return plan.every((d, i) => d.type === 'rest' || doneDates.has(addDays(start, i)));
+}
+
+/* ============ 全局状态 ============ */
+const STATE = {
+  profile: null,
+  page: 'today',
+  session: null,
+  sessionsCache: [],
+  planViewWeek: null,
+  scheduleConfirmDismissed: false // D2：本页会话「稍后再说」后不再即时弹，离开计划页后复位
+};
+/* V1.5 ⑤：页面级 settings 缓存（renderToday 等 async 渲染写入，执行页非 async 读取主有氧/自定义项） */
+let settingsCache = null;
+
+/* V1.5 ⑤：有氧项目名解析（内置器械 → EXERCISES；自定义预设 → 固定名；未知回退原始 id） */
+function cardioNameOf(id) {
+  if (EXERCISES[id]) return EXERCISES[id].name;
+  const p = CUSTOM_CARDIO_PRESETS.find(x => x.id === id);
+  return p ? p.name : String(id);
+}
+/* V1.5 ⑤：主有氧是否可用（指向内置器械或已激活预设才生效，否则回退 null） */
+function mainCardioUsable(cfg) {
+  const mc = cfg && cfg.mainCardio;
+  if (!mc) return null;
+  if (EXERCISES[mc] || (cfg.customCardio || []).indexOf(mc) !== -1) return mc;
+  return null;
+}
+/* V1.5 ⑤：有氧日标题（主有氧替换器械名，保留「＋附加」后缀；示例：椭圆仪＋体态/自重） */
+function cardioDayTitle(tpl, cfg) {
+  const cid = mainCardioUsable(cfg) || (tpl.cardio && tpl.cardio.exerciseId);
+  const parts = String(tpl.name || '').split('＋');
+  const rest = parts[1] || '';
+  return (cid ? cardioNameOf(cid) : (parts[0] || '')) + (rest ? '＋' + rest : '');
+}
+
+/* ============ 弹窗 ============ */
+function openModal(html) {
+  $('#modal-root').innerHTML =
+    '<div class="modal-mask"><div class="modal-sheet">' + html + '</div></div>';
+  $('#modal-root .modal-mask').addEventListener('click', e => {
+    if (e.target.classList.contains('modal-mask')) closeModal();
+  });
+}
+function closeModal() { $('#modal-root').innerHTML = ''; }
+function confirmModal(title, text, okLabel, danger) {
+  return new Promise(resolve => {
+    openModal('<h3>' + esc(title) + '</h3><p class="sub" style="margin-bottom:14px">' + esc(text) + '</p>' +
+      '<div class="btn-row"><button class="btn btn-secondary" id="m-cancel">取消</button>' +
+      '<button class="btn ' + (danger ? 'btn-danger' : '') + '" id="m-ok">' + esc(okLabel) + '</button></div>');
+    $('#m-cancel').onclick = () => { closeModal(); resolve(false); };
+    $('#m-ok').onclick = () => { closeModal(); resolve(true); };
+  });
+}
+
+/* ============ ✅ 完成庆祝动效（C10） ============ */
+function celebrate(text) {
+  return new Promise(resolve => {
+    const ov = $('#celebrate-overlay');
+    $('#celebrate-text').textContent = text || COPY.celebration;
+    ov.classList.remove('hidden');
+    vibrate([80, 60, 80]);
+    setTimeout(() => { ov.classList.add('hidden'); resolve(); }, 1700);
+  });
+}
+
+/* ============ RIR 说明（V1.5 ④：每天首次弹一次，跨天重置，不再永久记住） ============ */
+async function maybeShowRirHelp() {
+  const s = await getSettings();
+  if (s.rirHelpDate !== todayStr()) {
+    openModal('<h3>什么是剩余次数 (RIR)？</h3><p class="sub" style="margin-bottom:14px">' + esc(COPY.rirHelp) + '</p>' +
+      '<button class="btn btn-block" id="rir-ok">知道了</button>');
+    $('#rir-ok').onclick = async () => {
+      s.rirHelpDate = todayStr(); await saveSettings(s); closeModal();
+    };
+  }
+}
+
+/* ============ 休息计时 ============ */
+let timerInt = null;
+function startRestTimer(seconds) {
+  clearInterval(timerInt);
+  let left = seconds;
+  const ov = $('#timer-overlay');
+  ov.classList.remove('hidden');
+  const disp = $('#timer-display');
+  const render = () => {
+    const m = Math.floor(left / 60), s = left % 60;
+    disp.textContent = String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+  };
+  render();
+  timerInt = setInterval(() => {
+    left--;
+    if (left <= 0) {
+      clearInterval(timerInt);
+      disp.textContent = '00:00';
+      vibrate([200, 100, 200, 100, 300]);
+      setTimeout(() => ov.classList.add('hidden'), 600);
+    } else render();
+  }, 1000);
+  $('#timer-skip').onclick = () => { clearInterval(timerInt); ov.classList.add('hidden'); };
+}
+
+/* ============ 排期编辑器（A4：onboarding 与计划页共用） ============ */
+function scheduleEditorHtml(schedule) {
+  return DOW_KEYS.map((k, i) => {
+    const cur = schedule[k];
+    return '<div class="sched-day" data-dow="' + k + '"><div class="dow">' + DOW_NAMES[i] + '</div><div class="sched-opts">' +
+      ['strength', 'cardio', 'rest'].map(t =>
+        '<button type="button" class="sched-opt ' + TYPE_META[t].cls + (cur === t ? ' on' : '') + '" data-t="' + t + '">' +
+        TYPE_META[t].emoji + ' ' + TYPE_META[t].label + '</button>').join('') +
+      '</div></div>';
+  }).join('');
+}
+function bindScheduleEditor(container, schedule, onChange) {
+  container.querySelectorAll('.sched-opt').forEach(b => {
+    b.onclick = () => {
+      const dayEl = b.closest('.sched-day');
+      schedule[dayEl.dataset.dow] = b.dataset.t;
+      dayEl.querySelectorAll('.sched-opt').forEach(x => x.classList.toggle('on', x === b));
+      if (onChange) onChange();
+    };
+  });
+}
+function typeBadge(t) {
+  const m = TYPE_META[t];
+  return '<span class="badge ' + m.cls + '">' + m.emoji + ' ' + m.label + '</span>';
+}
+
+/* ============ V1.3/V1.4 辅助：部位标签 / 部位细条 / 红点 ============ */
+/* V1.4：动作部位的迷你标签（读 PART_TAG，全部 notes 都显示） */
+function partTagsHtml(ex) {
+  return exerciseNotes(ex).map(p =>
+    '<span class="part-tag">' + (PART_TAG[p] || p) + '</span>').join('');
+}
+/* C5/V1.4 细条边界决策：细条仅对 notes 与 HIGH_RISK_PARTS 有交集的动作触发（knee/shoulder/back），
+   其余部位（hip/core/wrist/ankle/neck/spine）只显示标签。关闭状态当次内存，不写库。 */
+const bodyTipClosed = new Set();
+function bodyTipHtml(key, ex, excludeParts) {
+  const profile = STATE.profile;
+  if (!profile || profile.bodyStatus === 'none' || bodyTipClosed.has(key)) return '';
+  const notes = exerciseNotes(ex).filter(p =>
+    HIGH_RISK_PARTS.indexOf(p) !== -1 && !(excludeParts && excludeParts.indexOf(p) !== -1));
+  if (!notes.length) return '';
+  const text = notes.map(p => COPY.bodyTips[p]).filter(Boolean).join('');
+  if (!text) return '';
+  return '<div class="body-tip" data-tipkey="' + key + '"><div>' + esc(text) + '</div>' +
+    '<button type="button" class="bt-x" aria-label="关闭">✕</button></div>';
+}
+function bindBodyTipClose(root) {
+  (root || document).querySelectorAll('.bt-x').forEach(x => {
+    x.onclick = () => {
+      const tip = x.closest('.body-tip');
+      if (tip) {
+        bodyTipClosed.add(tip.dataset.tipkey);
+        tip.remove();
+      }
+    };
+  });
+}
+/* D3：计划 Tab 红点（scheduleConfirmed=false 时显示） */
+function updateTabDots() {
+  const dot = document.querySelector('.tab[data-page="plan"] .tab-dot');
+  if (dot) dot.classList.toggle('show', !!(STATE.profile && STATE.profile.scheduleConfirmed === false));
+}
+
+/* ============ 路由 ============ */
+const PAGE_TITLES = { today: '今天', plan: '计划', progress: '进展', library: '动作库', settings: '设置' };
+async function go(page) {
+  STATE.page = page;
+  STATE.scheduleConfirmDismissed = false; // 每次切换页面复位「稍后再说」标记
+  $$('.page').forEach(p => p.classList.add('hidden'));
+  $$('.tab').forEach(t => t.classList.toggle('active', t.dataset.page === page));
+  $('#page-title').textContent = PAGE_TITLES[page] || '';
+  $('#app-header').className = 'hdr-' + page;
+  $('#tabbar').style.display = 'flex';
+  const el = $('#page-' + page);
+  el.classList.remove('hidden');
+  updateTabDots();
+  if (page === 'today') await renderToday(el);
+  else if (page === 'plan') await renderPlan(el);
+  else if (page === 'progress') await renderProgress(el);
+  else if (page === 'library') renderLibrary(el);
+  else if (page === 'settings') await renderSettings(el);
+}
+
+/* ============ 首次使用流程（V1.3：B 简化 + C1 身体三档） ============ */
+async function renderOnboarding(el) {
+  $$('.page').forEach(p => p.classList.add('hidden'));
+  $('#tabbar').style.display = 'none';
+  $('#page-title').textContent = '欢迎使用';
+  $('#app-header').className = 'hdr-today';
+  el.classList.remove('hidden');
+
+  el.innerHTML =
+    '<div class="card cream"><h2>嗨，欢迎来到这里 👋</h2>' +
+    '<p class="sub">' + esc(COPY.disclaimer) + '</p>' +
+    '<p class="sub" style="margin-top:8px">' + esc(COPY.localOnly) + '</p></div>' +
+
+    '<div class="card"><h3>先认识一下你</h3>' +
+    '<div class="grid2">' +
+    '<label class="field"><span>身高（cm）</span><input id="ob-height" type="number" step="0.5" placeholder="请输入身高"></label>' +
+    '<label class="field"><span>出生年份</span><input id="ob-birth" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="如 1990"></label></div>' +
+    '<div class="grid2">' +
+    '<label class="field"><span>性别</span><select id="ob-sex"><option value="female">女</option><option value="male">男</option><option value="other">其他</option></select></label>' +
+    '<label class="field"><span>当前体重（kg）</span><input id="ob-weight" type="number" step="0.1"></label></div></div>' +
+
+    '<div class="card"><h3>你首要的健身目标是什么？</h3><div id="ob-goals">' +
+    GOALS.map((g, i) => '<button type="button" class="radio-chip' + (i === 2 ? ' on' : '') + '" data-goal="' + g.id + '">' + g.label + '</button>').join('') +
+    '</div></div>' +
+
+    '<div class="card"><h3>每周计划练几天？</h3><div id="ob-days">' +
+    [2, 3, 4, 5].map(n => '<button type="button" class="radio-chip' + (n === 5 ? ' on' : '') + '" data-days="' + n + '">' + n + ' 天</button>').join('') +
+    '</div><p class="small" style="margin-top:6px">' + esc(COPY.onbDaysHint) + '</p></div>' +
+
+    '<div class="card"><h3>训练基础</h3><div id="ob-exp">' +
+    '<button type="button" class="radio-chip" data-v="experienced">有训练经验</button>' +
+    '<button type="button" class="radio-chip on" data-v="restart">久不训练，重新开始</button></div></div>' +
+
+    '<div class="card"><h3>' + esc(COPY.onbBodyTitle) + '</h3><div id="ob-body">' +
+    BODY_OPTIONS.map((b, i) =>
+      '<div class="body-opt"><button type="button" class="radio-chip' + (i === 0 ? ' on' : '') + '" data-v="' + b.id + '">' + b.label + '</button>' +
+      '<p class="opt-sub">' + esc(b.note) + '</p></div>').join('') +
+    '</div></div>' +
+
+    '<div class="card"><h3>什么时候开始？</h3>' +
+    '<label class="field"><span>第 1 周的周一</span><input id="ob-start" type="date"></label>' +
+    '<p class="small" style="margin-top:4px">' + esc(COPY.startDateNote) + '</p></div>' +
+
+    '<div class="card"><h3>初始围度（可选）</h3>' +
+    '<div class="grid2">' +
+    '<label class="field"><span>腰围（cm）</span><input id="ob-waist" type="number" step="0.1"></label>' +
+    '<label class="field"><span>臀围（cm）</span><input id="ob-hip" type="number" step="0.1"></label></div>' +
+    '<label class="field"><span>大腿围（cm）</span><input id="ob-thigh" type="number" step="0.1"></label>' +
+    '<p class="small">初始体态照片可稍后在「进展」页添加。</p></div>' +
+    '<button class="btn btn-block" id="ob-save">开始我的 8 周计划</button>' +
+    '<p class="small" style="margin-top:8px;text-align:center">无需注册，也不要求起始重量（首次训练用剩余次数(RIR)校准）。</p>';
+
+  // 默认下周一
+  const d = new Date(); d.setDate(d.getDate() + ((8 - d.getDay()) % 7 || 7));
+  $('#ob-start').value = fmtDate(d);
+
+  let goal = 'posture';
+  let days = 5;
+
+  const chipGroup = (id, cb) => {
+    $(id).querySelectorAll('.radio-chip').forEach(b => {
+      b.onclick = () => {
+        $(id).querySelectorAll('.radio-chip').forEach(x => x.classList.toggle('on', x === b));
+        if (cb) cb(b);
+      };
+    });
+  };
+  chipGroup('#ob-goals', b => { goal = b.dataset.goal; });
+  chipGroup('#ob-days', b => { days = parseInt(b.dataset.days, 10); });
+  chipGroup('#ob-exp');
+  chipGroup('#ob-body');
+
+  $('#ob-save').onclick = async () => {
+    const height = parseFloat($('#ob-height').value);
+    const weight = parseFloat($('#ob-weight').value);
+    const birthRaw = ($('#ob-birth').value || '').trim();
+    const start = $('#ob-start').value;
+    if (!height || height < 100 || height > 230) { alert('身高看一下哦，填 cm 数（100–230）'); return; }
+    if (!/^\d{4}$/.test(birthRaw) || +birthRaw < 1940 || +birthRaw > 2015) {
+      alert('出生年份需要是 4 位数字，范围 1940–2015'); return;
+    }
+    if (!weight) { alert('别忘了填当前体重（kg）'); return; }
+    if (!start) { alert('选一下第 1 周周一的开始日期'); return; }
+    const profile = {
+      birthYear: parseInt(birthRaw, 10),
+      sex: $('#ob-sex').value,
+      heightCm: height,
+      primaryGoal: goal,
+      experience: $('#ob-exp .radio-chip.on').dataset.v,
+      bodyStatus: $('#ob-body .radio-chip.on').dataset.v,
+      schedule: suggestSchedule(goal, days), // B3：静默生成，不再暴露编辑器
+      scheduleConfirmed: false, // D1：新档案待确认
+      chosenStartDate: start,
+      createdAt: Date.now()
+    };
+    await saveProfile(profile);
+    const m = { id: uuid(), date: todayStr(), weightKg: weight };
+    const w = parseFloat($('#ob-waist').value); if (w) m.waistCm = w;
+    const h = parseFloat($('#ob-hip').value); if (h) m.hipCm = h;
+    const t = parseFloat($('#ob-thigh').value); if (t) m.thighCm = t;
+    await DB.put('measurements', m);
+    STATE.profile = profile;
+    await maybeShowRirHelp();
+    go('today');
+  };
+}
+
+/* ============ 今天 ============ */
+async function getTodayContext() {
+  const profile = STATE.profile;
+  const weekIndex = currentWeekIndex(profile);
+  const plan = weekPlan(profile, weekIndex);
+  const dow = dowOf(todayStr());
+  const sessions = await DB.getAll('sessions');
+  STATE.sessionsCache = sessions;
+  const todaySession = sessions.find(s => s.date === todayStr());
+  return { weekIndex, dow, dayEntry: plan[dow - 1], sessions, todaySession };
+}
+
+async function renderToday(el) {
+  const ctx = await getTodayContext();
+  const { weekIndex, dayEntry, todaySession, sessions } = ctx;
+  const s = await getSettings();
+  settingsCache = s; // V1.5 ⑤：供 renderExecution 等非 async 渲染读取主有氧/自定义项
+
+  let html = '';
+  // 每 4 周照片导出轻提醒
+  const photoOld = s.lastPhotoExportAt ? Date.now() - s.lastPhotoExportAt >= 28 * 86400000
+    : (STATE.profile.createdAt && Date.now() - STATE.profile.createdAt >= 28 * 86400000);
+  if (photoOld && (await DB.getAll('photos')).length) {
+    html += '<div class="alert-soft">' + esc(COPY.photoReminder) + '</div>';
+  }
+
+  // 🎓 毕业卡
+  if (isGraduated(STATE.profile, sessions)) {
+    html += '<div class="card cream" style="text-align:center"><h2>' + esc(COPY.graduationTitle) + '</h2>' +
+      '<p class="sub">' + esc(COPY.graduationText) + '</p></div>';
+  }
+
+  // 顶部：日期 + 周徽章 + 🔥连续
+  const streak = computeStreak(sessions);
+  html += '<div class="card cream"><div class="row between"><div>' +
+    '<div class="sub">' + esc(todayStr()) + ' ｜ 第 ' + weekIndex + ' / 8 周 · ' + esc(phaseName(weekIndex)) + '</div>';
+
+  if (!dayEntry || !dayEntry.templateId) {
+    html += '<h2 style="margin-top:4px">' + TYPE_META.rest.emoji + ' 今天休息</h2>' +
+      '<p class="sub">' + esc(COPY.weekendNote) + '</p></div>' +
+      '<div>' + typeBadge('rest') + (streak >= 2 ? '<div class="badge accent" style="margin-top:6px">🔥 连续 ' + streak + ' 天</div>' : '') + '</div></div></div>';
+    el.innerHTML = html;
+    return;
+  }
+
+  const tpl = TEMPLATES[dayEntry.templateId];
+  const tType = templateType(tpl.id);
+  html += '<h2 style="margin-top:4px">' + TYPE_META[tType].emoji + ' ' + esc(tpl.name) + '</h2>' +
+    '<p class="sub">预计 ' + esc(tpl.estMin) + ' ｜ 强度：' + esc(tpl.intensity) + '</p></div>' +
+    '<div style="text-align:right">' + typeBadge(tType) +
+    (streak >= 2 ? '<div class="badge accent" style="margin-top:6px">🔥 连续 ' + streak + ' 天</div>' : '') +
+    '</div></div>';
+
+  // 上次表现摘要
+  const lastSame = sessions.filter(x => x.templateId === tpl.id && x.date !== todayStr())
+    .sort((a, b) => b.date.localeCompare(a.date))[0];
+  if (lastSame) {
+    const bits = (lastSame.exercises || []).slice(0, 3).map(e => {
+      const sets = (e.sets || []).filter(x2 => x2.reps !== null && x2.reps !== undefined);
+      if (!sets.length) return null;
+      const maxW = Math.max.apply(null, sets.map(x2 => x2.weightKg || 0));
+      const ex = EXERCISES[e.exerciseId];
+      return ex.name + ' ' + (maxW ? maxW + 'kg×' : '×') + sets[0].reps;
+    }).filter(Boolean);
+    html += '<div class="card"><h3>上次' + esc(tpl.name) + '（' + esc(lastSame.date) + '）</h3>' +
+      '<p class="small">' + (bits.length ? esc(bits.join(' ｜ ')) : '已完成') + '</p></div>';
+  }
+
+  if (todaySession && (todaySession.status === '已完成' || todaySession.status === '部分完成' || todaySession.status === '已跳过')) {
+    html += '<div class="card"><h3>' + (todaySession.status === '已完成' ? '✅ 今日训练完成' : '今日训练已记录') + '</h3>' +
+      '<p class="sub">状态：' + esc(todaySession.status) + '</p>' +
+      (todaySession.postFeedback && todaySession.postFeedback.difficulty1to5 ?
+        '<p class="small">整体难度：' + todaySession.postFeedback.difficulty1to5 + '/5</p>' : '') +
+      '</div>' + nextAdviceHtml(tpl, sessions, todaySession);
+    el.innerHTML = html;
+    return;
+  }
+
+  if (tpl.allowRestDay) {
+    html += '<div class="alert-soft">特别累的话，今天休息也完全没问题。<button class="btn btn-secondary btn-block" style="margin-top:8px" id="rest-today">😴 今天休息</button></div>';
+  }
+
+  html += '<button class="btn btn-block" id="start-training">开始训练</button>' +
+    '<button class="btn btn-secondary btn-block" id="posture-only">🧘 单独做体态小训练（8–10 分钟）</button>';
+
+  el.innerHTML = html;
+
+  $('#start-training').onclick = () => startSessionFlow(tpl.id, weekIndex);
+  $('#posture-only').onclick = () => startSessionFlow('posture', weekIndex);
+  const rt = $('#rest-today');
+  if (rt) rt.onclick = async () => {
+    const ok = await confirmModal('今天休息', '把今天的训练标记为「已跳过」？休息也是计划的一部分。', '确认休息');
+    if (ok) {
+      await DB.put('sessions', {
+        id: uuid(), date: todayStr(), templateId: tpl.id, weekIndex, dayType: tpl.dayLabel,
+        mode: 'standard', status: '已跳过', readiness: null, exercises: [], postFeedback: null,
+        createdAt: Date.now(), updatedAt: Date.now()
+      });
+      go('today');
+    }
+  };
+}
+
+/* 下次建议展示 */
+function nextAdviceHtml(tpl, sessions, currentSession) {
+  if (!tpl.exercises) return '';
+  const kneeLocked = (currentSession && currentSession.readiness && currentSession.readiness.kneePain0to10 >= 3) ||
+    hasRedFlag(currentSession) || recentRedFlag(sessions, 28);
+  const items = [];
+  for (const pe of tpl.exercises) {
+    const ex = EXERCISES[pe.exerciseId];
+    if (ex.type === 'cardio') continue;
+    const hist = exerciseHistory(sessions, pe.exerciseId, null);
+    const adv = progressionAdvice(pe.exerciseId, pe.reps, hist);
+    if (!adv) continue;
+    let text = adv.text;
+    if (kneeLocked && isLowerBody(pe.exerciseId) && (adv.action === 'add' || adv.action === 'bodyweightUp')) {
+      text = '膝部保护中：下肢先不加重，' + (adv.action === 'add' ? '保持当前重量就好。' : '保持当前次数/时长就好。');
+    }
+    items.push('<li><strong>' + esc(ex.name) + '</strong>：' + esc(text) + '</li>');
+  }
+  if (!items.length) return '';
+  return '<div class="card"><h3>下次训练建议</h3><p class="small" style="margin-bottom:6px">' + esc(COPY.adviceIsSuggestion) + '</p>' +
+    '<ul class="small" style="padding-left:18px">' + items.join('') + '</ul></div>';
+}
+
+/* ============ 训练流程 ============ */
+async function startSessionFlow(templateId, weekIndex) {
+  const tpl = TEMPLATES[templateId];
+  const existing = STATE.sessionsCache.find(s => s.date === todayStr() && s.templateId === templateId);
+  if (existing && existing.status === '进行中') { STATE.session = existing; renderExecution(); return; }
+
+  // V1.3 C4：膝档先做自动规避，再展开为按周组数的 planExercises
+  const resolved = resolveTemplateExercises(STATE.profile, templateId);
+  const planExercises = (resolved && resolved.length ? resolved : (tpl.exercises || [])).map(pe => {
+    const p = planFor(pe, weekIndex);
+    const item = { exerciseId: pe.exerciseId, reps: pe.reps, sets: p.sets, rir: p.rir, rest: pe.rest, main: !!pe.main, perSide: !!pe.perSide, timed: !!pe.timed || !!EXERCISES[pe.exerciseId].timed };
+    if (pe.autoSub) { item.autoSub = true; item.originalId = pe.originalId || pe.exerciseId; }
+    return item;
+  });
+
+  openModal(
+    '<h3>开始之前，先聊聊今天的状态</h3>' +
+    '<div class="grid2">' +
+    '<label class="field"><span>睡眠（小时，可小数）</span><input id="rd-sleep" type="number" step="0.5" min="0" max="14"></label>' +
+    '<label class="field"><span>膝部疼痛（0–10）</span><input id="rd-knee" type="number" min="0" max="10" value="0"></label></div>' +
+    '<div class="grid2">' +
+    '<label class="field"><span>精力（1–5）</span><input id="rd-energy" type="number" min="1" max="5" value="3"></label>' +
+    '<label class="field"><span>疲劳（1–5）</span><input id="rd-fatigue" type="number" min="1" max="5" value="3"></label></div>' +
+    '<label class="field row" style="align-items:center"><input id="rd-sore" type="checkbox" style="width:auto;min-height:auto;margin-right:8px"><span style="margin:0">明显全身酸痛</span></label>' +
+    '<label class="field"><span>备注（可选）</span><input id="rd-note" type="text"></label>' +
+    '<button class="btn btn-block" id="rd-go">生成建议并开始</button>');
+
+  $('#rd-go').onclick = async () => {
+    const readiness = {
+      sleepHours: $('#rd-sleep').value === '' ? null : parseFloat($('#rd-sleep').value),
+      energy1to5: parseInt($('#rd-energy').value, 10) || null,
+      fatigue1to5: parseInt($('#rd-fatigue').value, 10) || null,
+      kneePain0to10: parseInt($('#rd-knee').value, 10) || 0,
+      sore: $('#rd-sore').checked,
+      note: $('#rd-note').value || ''
+    };
+    const session = {
+      id: uuid(), date: todayStr(), templateId, weekIndex, dayType: tpl.dayLabel,
+      mode: 'standard', status: '进行中', readiness,
+      planExercises, appliedAdvice: [], ignoredAdvice: [],
+      exercises: [], cardio: null, postFeedback: null,
+      createdAt: Date.now(), updatedAt: Date.now()
+    };
+    await DB.put('sessions', session);
+    STATE.session = session;
+    showAdviceCards(readiness, tpl);
+  };
+}
+
+/* 第 2 步：建议卡（B7：结论 + 一句原因，「为什么」可展开） */
+function showAdviceCards(readiness, tpl) {
+  const cards = readinessAdvice(readiness, tpl);
+  const whyMap = {
+    knee: '规则是这样的：膝部疼痛到 3 分以上时，下肢动作不自动进阶，避免带痛硬练。',
+    sleep: '规则是这样的：睡眠不足 6 小时时，主要动作保持重量、减少 1 组，强度让位给恢复。',
+    energy: '规则是这样的：精力 1–2 或疲劳 4–5 时，优先提供 25 分钟精简模式。',
+    sore: '规则是这样的：明显全身酸痛时不加重，可以缩减辅助动作。',
+    plan: '状态评估都正常，不需要减量。'
+  };
+  const html = '<h3>今日建议</h3>' +
+    '<p class="small" style="margin-bottom:8px">' + esc(COPY.adviceIsSuggestion) + '</p>' +
+    cards.map((c, i) =>
+      '<div class="card" style="margin-bottom:8px"><p style="font-weight:700">' + esc(c.title) + '</p>' +
+      '<p class="sub" style="font-size:14px">' + esc(c.detail) + '</p>' +
+      '<details class="fold"><summary>为什么这样建议？</summary><p class="small">' + esc(whyMap[c.id] || '') + '</p></details>' +
+      '<div class="btn-row" style="margin-top:8px">' +
+      (c.action !== 'plan' ? '<button class="btn" data-accept="' + i + '">接受</button>' : '') +
+      '<button class="btn btn-secondary" data-ignore="' + i + '">' + (c.action === 'plan' ? '好' : '忽略') + '</button>' +
+      '</div></div>').join('');
+  openModal(html);
+  $('#modal-root').querySelectorAll('[data-accept]').forEach(btn => {
+    btn.onclick = async () => {
+      const c = cards[parseInt(btn.dataset.accept, 10)];
+      STATE.session.planExercises = applyAdviceToPlan(STATE.session.planExercises, c.action);
+      if (c.action === 'shortMode') STATE.session.mode = 'short';
+      STATE.session.appliedAdvice.push(c.id);
+      STATE.session.updatedAt = Date.now();
+      await DB.put('sessions', STATE.session);
+      closeModal();
+      renderExecution();
+    };
+  });
+  $('#modal-root').querySelectorAll('[data-ignore]').forEach(btn => {
+    btn.onclick = async () => {
+      const c = cards[parseInt(btn.dataset.ignore, 10)];
+      if (c.action !== 'plan') {
+        STATE.session.ignoredAdvice.push(c.id); // 忽略要记录
+        STATE.session.updatedAt = Date.now();
+        await DB.put('sessions', STATE.session);
+      }
+      closeModal();
+      renderExecution();
+    };
+  });
+}
+
+/* 第 3 步：执行页 */
+function renderExecution() {
+  const s = STATE.session;
+  const tpl = TEMPLATES[s.templateId];
+  $$('.page').forEach(p => p.classList.add('hidden'));
+  const el = $('#page-today');
+  el.classList.remove('hidden');
+  $('#page-title').textContent = tpl.name + '（进行中）';
+
+  let html = '<div class="card cream"><div class="row between">' +
+    '<div><strong>' + TYPE_META[templateType(tpl.id)].emoji + ' ' + esc(tpl.name) + '</strong> ' +
+    '<span class="badge ' + TYPE_META[templateType(tpl.id)].cls + '">' + (s.mode === 'short' ? '精简模式 25 分钟' : '标准 60 分钟') + '</span></div>' +
+    '<button class="btn btn-secondary" id="finish-btn" style="min-height:40px">结束训练</button></div></div>';
+
+  if (s.readiness && s.readiness.kneePain0to10 >= 3) {
+    html += '<div class="alert-orange">' + esc(COPY.kneeRule) + '</div>';
+  }
+
+  // 有氧部分（V1.5 ⑤：主有氧默认 + 四固定自定义预设可选）
+  if (tpl.cardio) {
+    const c = (STATE.session && STATE.session.cardio) || {};
+    const kneeBody = STATE.profile && STATE.profile.bodyStatus === 'knee';
+    const cfg = settingsCache || {};
+    const activeCustom = (cfg.customCardio || []).filter(id => CUSTOM_CARDIO_PRESETS.some(p => p.id === id));
+    const mc = mainCardioUsable(cfg);
+    const defId = c.machine || mc || tpl.cardio.exerciseId;
+    const isCustomSel = id => activeCustom.indexOf(id) !== -1;
+    const optInner = CARDIO_MACHINES.map(m => {
+      const dis = kneeBody && m === 'stair_climber'; // C7：knee 档禁选登山机
+      return '<option value="' + m + '"' + (defId === m ? ' selected' : '') + (dis ? ' disabled' : '') + '>' +
+        esc(EXERCISES[m].name) + (dis ? '（暂不建议）' : '') + '</option>';
+    }).join('') +
+      (activeCustom.length ? '<optgroup label="我的有氧">' + activeCustom.map(id =>
+        '<option value="' + id + '"' + (defId === id ? ' selected' : '') + '>' + esc(cardioNameOf(id)) + '</option>').join('') + '</optgroup>' : '');
+    const defCustom = isCustomSel(defId);
+    html += '<div class="card ex-card t-cardio"><h3>🚶 ' + esc(cardioNameOf(defId)) +
+      ' <span class="badge t-cardio">有氧 ' + tpl.cardio.minutes[0] + '–' + tpl.cardio.minutes[1] + ' 分钟</span></h3>' +
+      '<p class="small" style="margin-bottom:8px">' + esc(tpl.cardio.intensityNote) + '<br>' + esc(COPY.talkTest) + '</p>' +
+      '<label class="field"><span>项目</span><select id="cardio-machine">' + optInner + '</select></label>' +
+      (kneeBody
+        ? '<p class="small" id="cardio-knee-hint" style="margin:-4px 0 8px">' + esc(defCustom ? COPY.customKneeHint : COPY.machineKneeHint) + '</p>'
+        : '<p class="small" id="cardio-knee-hint" hidden>' + esc(COPY.customKneeHint) + '</p>') +
+      '<div class="grid2">' +
+      '<label class="field"><span>持续时间（分钟）*</span><input id="cardio-min" type="number" min="1" value="' + (c.minutes || '') + '"></label>' +
+      '<label class="field"><span>主观强度（1–10）*</span><input id="cardio-rpe" type="number" min="1" max="10" value="' + (c.rpe || '') + '"></label></div>' +
+      '<div class="grid2" id="cardio-extra"' + (defCustom ? ' style="display:none"' : '') + '>' +
+      '<label class="field"><span>速度（选填）</span><input id="cardio-speed" type="number" step="0.1" value="' + (c.speed || '') + '"></label>' +
+      '<label class="field"><span>坡度/阻力（选填）</span><input id="cardio-level" type="number" step="0.5" value="' + (c.level || '') + '"></label></div>' +
+      '<button class="btn btn-secondary btn-block" id="cardio-save">保存有氧记录</button></div>';
+  }
+
+  // 力量动作卡
+  s.planExercises.forEach((pe, pi) => {
+    const ex = EXERCISES[pe.exerciseId];
+    const rec = (s.exercises || []).find(e => e.exerciseId === pe.exerciseId);
+    const sets = rec ? rec.sets : [];
+    const repsTxt = pe.timed ? pe.reps[0] + '–' + pe.reps[1] + ' 秒' : pe.reps[0] + '–' + pe.reps[1] + ' 次';
+    const partTags = partTagsHtml(ex);
+    const autoTag = pe.autoSub ? ' <span class="badge accent">' + esc(COPY.autoSubBadge) + '</span>' : '';
+    const tipHtml = bodyTipHtml('s:' + s.id + ':' + pe.exerciseId, ex); // C5：部位细条
+    html += '<div class="card ex-card" data-pi="' + pi + '">' +
+      '<div class="row between"><h3>' + esc(ex.name) + partTags + autoTag + '</h3>' +
+      '<button class="btn btn-secondary" style="min-height:36px;font-size:13px" data-sub="' + pi + '">换动作</button></div>' +
+      tipHtml +
+      '<p class="small">计划 ' + pe.sets + ' 组 × ' + repsTxt + (pe.perSide ? '（每侧）' : '') +
+      ' ｜ 目标剩余次数(RIR) ' + pe.rir + ' ｜ 休息 ' + pe.rest + 's' +
+      (rec && rec.substituted ? ' ｜ <span class="badge subtle">已替换</span>' : '') + '</p>' +
+      '<div class="sets-box">';
+    for (let i = 0; i < pe.sets; i++) {
+      const st = sets[i] || {};
+      html += '<div class="set-row" data-pi="' + pi + '" data-si="' + i + '">' +
+        '<div class="set-label">第' + (i + 1) + '组</div>' +
+        (ex.bodyweight ? '<input type="number" placeholder="负重kg(选)" value="' + (st.weightKg || '') + '" data-f="weightKg">' :
+          '<input type="number" step="0.5" min="0" placeholder="重量kg" value="' + (st.weightKg === 0 || st.weightKg ? st.weightKg : '') + '" data-f="weightKg">') +
+        '<input type="number" min="0" placeholder="' + (pe.timed ? '秒' : '次数') + '" value="' + (st.reps === 0 || st.reps ? st.reps : '') + '" data-f="reps">' +
+        '<select data-f="rir"><option value="">剩余次数(RIR)</option>' +
+        RIR_OPTIONS.map(r => '<option' + (st.rir === r ? ' selected' : '') + '>' + r + '</option>').join('') + '</select>' +
+        '</div>';
+    }
+    html += '</div>' +
+      '<label class="field" style="margin-top:6px"><span>疼痛/异常备注（可选）</span>' +
+      '<input type="text" data-pain="' + pi + '" value="' + esc(rec && rec.painNote ? rec.painNote : '') + '" placeholder="如：膝部第2组刺痛"></label>' +
+      '<div class="btn-row">' +
+      '<button class="btn" data-savesets="' + pi + '">保存该动作</button>' +
+      '<button class="btn btn-secondary" data-rest="' + pe.rest + '">休息 ' + pe.rest + 's</button>' +
+      '</div>' +
+      '<div class="btn-row" style="margin-top:6px"><button class="btn btn-secondary" data-anomaly="' + pi + '" style="font-size:13px">动作异常反馈</button></div>' +
+      '</div>';
+  });
+
+  el.innerHTML = html;
+  bindExecutionEvents(el, tpl);
+}
+
+function bindExecutionEvents(el, tpl) {
+  const s = STATE.session;
+
+  el.querySelectorAll('[data-rest]').forEach(b => {
+    b.onclick = () => startRestTimer(parseInt(b.dataset.rest, 10));
+  });
+
+  el.querySelectorAll('[data-sub]').forEach(b => {
+    b.onclick = () => openSwapModal(parseInt(b.dataset.sub, 10));
+  });
+
+  el.querySelectorAll('[data-savesets]').forEach(b => {
+    b.onclick = async () => {
+      const pi = parseInt(b.dataset.savesets, 10);
+      const pe = s.planExercises[pi];
+      const card = el.querySelector('[data-pi="' + pi + '"]');
+      const rows = card.querySelectorAll('.set-row');
+      const sets = [];
+      rows.forEach((row, i) => {
+        const w = row.querySelector('[data-f="weightKg"]').value;
+        const r = row.querySelector('[data-f="reps"]').value;
+        const rir = row.querySelector('[data-f="rir"]').value;
+        sets.push({
+          setIndex: i,
+          plannedReps: pe.reps[1],
+          weightKg: w === '' ? null : parseFloat(w),
+          reps: r === '' ? null : parseInt(r, 10),
+          rir: rir || null
+        });
+      });
+      let rec = s.exercises.find(e => e.exerciseId === pe.exerciseId);
+      if (!rec) { rec = { exerciseId: pe.exerciseId, sets: [] }; s.exercises.push(rec); }
+      rec.sets = sets;
+      rec.painNote = el.querySelector('[data-pain="' + pi + '"]').value || '';
+      s.updatedAt = Date.now();
+      await DB.put('sessions', s);
+      b.textContent = '已保存 ✓';
+      setTimeout(() => { b.textContent = '保存该动作'; }, 1200);
+    };
+  });
+
+  el.querySelectorAll('[data-anomaly]').forEach(b => {
+    b.onclick = () => {
+      const pi = parseInt(b.dataset.anomaly, 10);
+      const pe = s.planExercises[pi];
+      openModal('<h3>动作异常：' + esc(EXERCISES[pe.exerciseId].name) + '</h3>' +
+        '<label class="field"><span>动作中疼痛（0–10）</span><input id="an-pain" type="number" min="0" max="10"></label>' +
+        '<label class="field"><span>说明（可选）</span><input id="an-note" type="text"></label>' +
+        '<div class="alert-orange" style="margin-top:8px"><strong>🛑 红旗自查</strong>（勾选符合项）：<br>' +
+        RED_FLAG_ITEMS.map((f, i) => '<label class="row" style="margin-top:4px"><input type="checkbox" style="width:auto;min-height:auto" data-rf="' + i + '"><span style="font-size:14px">' + esc(f) + '</span></label>').join('') +
+        '</div>' +
+        '<button class="btn btn-block" id="an-save">保存</button>');
+      $('#an-save').onclick = async () => {
+        let rec = s.exercises.find(e => e.exerciseId === pe.exerciseId);
+        if (!rec) { rec = { exerciseId: pe.exerciseId, sets: [] }; s.exercises.push(rec); }
+        const pain = parseInt($('#an-pain').value, 10);
+        rec.painDuring = isNaN(pain) ? null : pain;
+        rec.anomalyNote = $('#an-note').value || '';
+        rec.redFlags = $$('#modal-root [data-rf]').filter(c => c.checked).map(c => RED_FLAG_ITEMS[parseInt(c.dataset.rf, 10)]);
+        s.updatedAt = Date.now();
+        await DB.put('sessions', s);
+        closeModal();
+        if (rec.redFlags.length) {
+          openModal('<h3 style="color:var(--danger)">' + esc(COPY.redFlagTitle) + '</h3>' +
+            '<div class="alert-red">' + esc(COPY.redFlagText) + '</div>' +
+            '<button class="btn btn-block" id="rf-ok">我已了解</button>');
+          $('#rf-ok').onclick = () => { closeModal(); renderExecution(); };
+        } else if (rec.painDuring !== null && rec.painDuring >= 3) {
+          openModal('<h3>疼痛提示</h3><div class="alert-orange">动作中疼痛≥3：建议减重、缩小幅度或替换动作（建议，非诊断）。</div>' +
+            '<button class="btn btn-block" id="pn-ok">知道了</button>');
+          $('#pn-ok').onclick = () => { closeModal(); renderExecution(); };
+        } else renderExecution();
+      };
+    };
+  });
+
+  // V1.5 ⑤：有氧项目切换 → 自定义项只留「时长+强度」，knee 提示按所选项目切换
+  const cardioSel = el.querySelector('#cardio-machine');
+  if (cardioSel) {
+    const updateCardioUi = () => {
+      const cfg = settingsCache || {};
+      const isCus = (cfg.customCardio || []).indexOf(cardioSel.value) !== -1;
+      const extra = el.querySelector('#cardio-extra');
+      if (extra) extra.style.display = isCus ? 'none' : '';
+      const hint = el.querySelector('#cardio-knee-hint');
+      if (hint) {
+        const kneeBody = STATE.profile && STATE.profile.bodyStatus === 'knee';
+        if (!kneeBody) { hint.hidden = true; return; }
+        hint.hidden = false;
+        hint.textContent = isCus ? COPY.customKneeHint : COPY.machineKneeHint;
+      }
+    };
+    cardioSel.addEventListener('change', updateCardioUi);
+  }
+
+  const cardioSave = el.querySelector('#cardio-save');
+  if (cardioSave) {
+    cardioSave.onclick = async () => {
+      const min = parseInt($('#cardio-min').value, 10);
+      const rpe = parseInt($('#cardio-rpe').value, 10);
+      if (!min || !rpe) { alert('持续时间与主观强度为必填'); return; }
+      const sel = $('#cardio-machine');
+      if (!sel.value) { alert('请选择项目'); return; }
+      s.cardio = {
+        machine: sel.value, minutes: min, rpe,
+        speed: $('#cardio-speed').value === '' ? null : parseFloat($('#cardio-speed').value),
+        level: $('#cardio-level').value === '' ? null : parseFloat($('#cardio-level').value)
+      };
+      s.updatedAt = Date.now();
+      await DB.put('sessions', s);
+      cardioSave.textContent = '已保存 ✓';
+      setTimeout(() => { cardioSave.textContent = '保存有氧记录'; }, 1200);
+    };
+  }
+
+  bindBodyTipClose(el); // C5：细条 ✕ 关闭（当次 session 内存）
+
+  $('#finish-btn').onclick = () => renderPostFeedback();
+}
+
+/* V1.4 R3：换动作弹层（推荐替代 + 自己挑一个）。仅当次 session 生效，沿用 rec.substituted 写入路径。 */
+function applySwap(session, pi, newId) {
+  const pe = session.planExercises[pi];
+  let rec = session.exercises.find(e => e.exerciseId === pe.exerciseId);
+  if (!rec) { rec = { exerciseId: pe.exerciseId, sets: [], substituted: false }; session.exercises.push(rec); }
+  rec.substituted = true;
+  rec.substitutedTo = newId;
+  pe.exerciseId = newId;
+  // V1.3 换回逻辑：若换回自动替换前的原动作，清除 autoSub/originalId 标记
+  if (newId === pe.originalId) { delete pe.autoSub; delete pe.originalId; }
+  session.updatedAt = Date.now();
+}
+function swapRowHtml(id) {
+  const ex = EXERCISES[id];
+  if (!ex) return '';
+  return '<button type="button" class="swap-row" data-sel="' + id + '">' +
+    '<span class="swap-name">' + esc(ex.name) + partTagsHtml(ex) + '</span>' +
+    '<span class="swap-type">' + (TYPE_CN[ex.type] || ex.type) + '</span></button>';
+}
+function openSwapModal(pi) {
+  const s = STATE.session;
+  if (!s || !s.planExercises) return;
+  const pe = s.planExercises[pi];
+  if (!pe) return;
+  // 上区：推荐替代（SUBSTITUTES 原逻辑；autoSub 动作允许换回原动作）
+  const cands = (SUBSTITUTES[pe.exerciseId] || []).slice();
+  if (pe.autoSub && pe.originalId && pe.originalId !== pe.exerciseId &&
+      cands.indexOf(pe.originalId) === -1) cands.push(pe.originalId);
+  // 下区：自己挑一个——同 target 全库候选，排除自身与当日计划已含
+  const taken = s.planExercises.map(x => x.exerciseId);
+  const picks = sameTargetCandidates(pe.exerciseId, taken);
+  openModal('<h3>换动作</h3>' +
+    '<p class="small" style="margin-bottom:8px">' + esc(COPY.swapIntro) + '</p>' +
+    '<div class="swap-sec-head">' + esc(COPY.swapRecTitle) + '</div>' +
+    (cands.length ? '<div class="swap-list">' + cands.map(swapRowHtml).join('') + '</div>'
+      : '<p class="small" style="margin:2px 0 8px">暂无推荐替代，看看下面自己挑的。</p>') +
+    '<div class="swap-divider"></div>' +
+    '<div class="swap-sec-head">' + esc(COPY.swapPickTitle) + '</div>' +
+    (picks.length ? '<div class="swap-list">' + picks.map(p => swapRowHtml(p.id)).join('') + '</div>'
+      : '<p class="small" style="margin:2px 0">' + esc(COPY.swapPickEmpty) + '</p>'));
+  $('#modal-root').querySelectorAll('[data-sel]').forEach(sb => {
+    sb.onclick = async () => {
+      applySwap(s, pi, sb.dataset.sel);
+      await DB.put('sessions', s);
+      closeModal();
+      renderExecution();
+    };
+  });
+}
+
+/* 第 4 步：练后反馈 */
+function renderPostFeedback() {
+  const s = STATE.session;
+  openModal('<h3>练完啦，感觉怎么样？</h3>' +
+    '<label class="field"><span>整体难度（1–5）</span><input id="pf-diff" type="number" min="1" max="5" value="3"></label>' +
+    '<label class="field"><span>膝部变化</span><select id="pf-knee">' +
+    '<option value="same">无变化</option><option value="better">好转</option><option value="worse">加重</option></select></label>' +
+    '<label class="field"><span>完成状态</span><select id="pf-status">' +
+    '<option value="已完成">已完成</option><option value="部分完成">部分完成</option><option value="已跳过">已跳过</option></select></label>' +
+    '<div class="alert-orange"><strong>🛑 红旗自查</strong>（勾选符合项）：<br>' +
+    RED_FLAG_ITEMS.map((f, i) => '<label class="row" style="margin-top:4px"><input type="checkbox" style="width:auto;min-height:auto" data-prf="' + i + '"><span style="font-size:14px">' + esc(f) + '</span></label>').join('') +
+    '</div>' +
+    '<button class="btn btn-block" id="pf-save">完成并生成摘要</button>');
+
+  $('#pf-save').onclick = async () => {
+    s.postFeedback = {
+      difficulty1to5: parseInt($('#pf-diff').value, 10) || null,
+      kneeChange: $('#pf-knee').value,
+      completed: $('#pf-status').value === '已完成',
+      redFlags: $$('#modal-root [data-prf]').filter(c => c.checked).map(c => RED_FLAG_ITEMS[parseInt(c.dataset.prf, 10)])
+    };
+    s.status = $('#pf-status').value;
+    s.updatedAt = Date.now();
+    await DB.put('sessions', s);
+    closeModal();
+    const after = () => {
+      if (s.postFeedback.redFlags.length) {
+        openModal('<h3 style="color:var(--danger)">' + esc(COPY.redFlagTitle) + '</h3>' +
+          '<div class="alert-red">' + esc(COPY.redFlagText) + '</div>' +
+          '<button class="btn btn-block" id="rf2-ok">我已了解</button>');
+        $('#rf2-ok').onclick = () => { closeModal(); go('today'); };
+      } else {
+        go('today');
+      }
+    };
+    if (s.status === '已完成') celebrate().then(after);
+    else after();
+  };
+}
+
+/* ============ 计划（B9 卡片式周视图） ============ */
+async function renderPlan(el) {
+  const profile = STATE.profile;
+  const curWeek = currentWeekIndex(profile);
+  if (!STATE.planViewWeek) STATE.planViewWeek = curWeek;
+  const viewWeek = STATE.planViewWeek;
+  const sessions = await DB.getAll('sessions');
+  const doneDates = new Set(sessions.filter(x => x.status === '已完成' || x.status === '部分完成').map(x => x.date));
+  const cfg = await getSettings(); // V1.5 ⑤：主有氧/自定义项影响计划页标题展示
+
+  // 顶部进度条 + 当前周徽章
+  let html = '<div class="card"><div class="row between"><h2 style="margin:0">8 周计划</h2>' +
+    '<span class="badge subtle">第 ' + curWeek + ' 周 / 共 8 周 · ' + esc(phaseName(curWeek)) + '</span></div>' +
+    '<div class="week-progress">' +
+    Array.from({ length: 8 }, (_, i) => '<div class="seg' + (i + 1 < curWeek ? ' done' : i + 1 === curWeek ? ' cur' : '') + '"></div>').join('') +
+    '</div>';
+
+  // 切周导航
+  html += '<div class="week-nav"><button class="btn btn-secondary" id="wk-prev"' + (viewWeek <= 1 ? ' disabled' : '') + '>◀ 上一周</button>' +
+    '<strong>第 ' + viewWeek + ' 周</strong>' +
+    '<button class="btn btn-secondary" id="wk-next"' + (viewWeek >= 8 ? ' disabled' : '') + '>下一周 ▶</button></div>';
+
+  // 7 天卡片
+  const start = weekStartOf(profile, viewWeek);
+  const plan = weekPlan(profile, viewWeek);
+  html += '<div class="day-cards">';
+  plan.forEach((d, i) => {
+    const dateStr = addDays(start, i);
+    const isToday = dateStr === todayStr();
+    const t = d.type;
+    const tpl = d.templateId ? TEMPLATES[d.templateId] : null;
+    const line = tpl
+      ? (tpl.cardio ? cardioDayTitle(tpl, cfg) : tpl.name) + ' · ' + tpl.estMin.split('–')[1].replace(' 分钟', '') + '分'
+      : '休息';
+    const done = doneDates.has(dateStr);
+    html += '<div class="day-card ' + TYPE_META[t].cls + (isToday ? ' is-today' : '') + '">' +
+      (done ? '<span class="dc-done">✅</span>' : '') +
+      '<div class="dc-dow">' + DOW_NAMES[i].slice(1) + '</div>' +
+      '<div class="dc-emoji">' + TYPE_META[t].emoji + '</div>' +
+      '<div class="dc-line">' + esc(line) + '</div></div>';
+  });
+  html += '</div>' +
+    '<button class="btn btn-secondary btn-block" id="edit-sched" style="margin-top:10px">调整每周排期</button></div>';
+
+  // 力量 A/B 动作清单（卡片化；C4：膝档显示替换后的动作）
+  for (const tid of ['strengthA', 'strengthB']) {
+    const tpl = TEMPLATES[tid];
+    const exs = resolveTemplateExercises(profile, tid);
+    html += '<div class="card"><h2>💪 ' + esc(tpl.name) + ' <span class="small">（' + esc(tpl.estMin) + '，' + esc(tpl.intensity) + '）</span></h2>' +
+      exs.map(pe => {
+        const ex = EXERCISES[pe.exerciseId];
+        const autoNote = pe.autoSub ? '<p class="small">' + esc(COPY.autoSubBadge) + '（为你换成对膝部更友好的动作）</p>' : '';
+        return '<div class="plan-ex"><div>' + esc(ex.name) + partTagsHtml(ex) + autoNote + '</div>' +
+          '<div class="pe-meta">' + (pe.timed ? pe.reps[0] + '–' + pe.reps[1] + 's' : pe.reps[0] + '–' + pe.reps[1] + '次') + (pe.perSide ? '/侧' : '') +
+          ' ｜ ' + pe.sets[0] + '→' + pe.sets[7] + '组 ｜ 剩余次数(RIR) ' + (pe.rir.length >= 8 ? pe.rir[0] + '→' + pe.rir[7] : pe.rir[0]) + ' ｜ ' + pe.rest + 's</div></div>';
+      }).join('') + '</div>';
+  }
+
+  // 有氧日内容（折叠减字；V1.5 ⑤：主有氧替换默认器械名展示）
+  for (const tid of ['tuesday', 'thursday']) {
+    const tpl = TEMPLATES[tid];
+    const cName = cardioNameOf(mainCardioUsable(cfg) || tpl.cardio.exerciseId);
+    html += '<div class="card"><h2>🚶 ' + esc(tpl.dayLabel) + ' · ' + esc(cName) + '</h2>' +
+      '<p class="small"><strong>' + esc(cName) + '</strong> ' + tpl.cardio.minutes[0] + '–' + tpl.cardio.minutes[1] + ' 分钟</p>' +
+      '<details class="fold"><summary>查看详细内容</summary><ul class="small">' +
+      '<li>' + esc(tpl.cardio.intensityNote) + '</li>' +
+      tpl.exercises.map(pe => '<li>' + esc(EXERCISES[pe.exerciseId].name) + ' ' + pe.sets[0] + '×' + pe.reps[0] + (pe.reps[1] !== pe.reps[0] ? '–' + pe.reps[1] : '') + (pe.perSide ? '（每侧）' : '') + (pe.timed ? '秒' : '') + '</li>').join('') +
+      '</ul>' + (tpl.allowRestDay ? '<p class="small" style="margin-top:6px">明显疲劳时这一天可以休息。</p>' : '') + '</details></div>';
+  }
+
+  // 阶段说明 / 体态小训练 / 有氧顺序（折叠）
+  const pt = TEMPLATES.posture;
+  html += '<div class="card"><h2>📋 周期与补充</h2>' +
+    '<details class="fold"><summary>周期阶段说明</summary><ul class="small">' +
+    PHASES.map(p => '<li><strong>' + esc(p.weeks) + '（' + esc(p.name) + '）</strong>：' + esc(p.text) + '</li>').join('') + '</ul></details>' +
+    '<details class="fold"><summary>🧘 体态小训练（' + esc(pt.estMin) + '）</summary><ul class="small">' +
+    pt.exercises.map(pe => '<li>' + esc(EXERCISES[pe.exerciseId].name) + ' ' + pe.sets[0] + '×' + pe.reps[0] + (pe.reps[1] !== pe.reps[0] ? '–' + pe.reps[1] : '') + (pe.perSide ? '（每侧）' : '') + (pe.holdSec ? '，保持 ' + pe.holdSec[0] + '–' + pe.holdSec[1] + 's' : '') + '</li>').join('') +
+    '</ul></details>' +
+    '<details class="fold"><summary>有氧项目说明</summary><p class="small">' +
+    (((cfg.customCardio || []).length) ? '你的有氧：' + cfg.customCardio.map(cardioNameOf).join('、') + '。<br>' : '') +
+    '内置：椭圆仪＝前 4 周首选；跑步机＝快走为主，平地/小坡度；登山机＝第 5 周后可选，膝部稳定时 5–10 分钟起步。</p></details></div>';
+
+  el.innerHTML = html;
+
+  $('#wk-prev').onclick = () => { STATE.planViewWeek = Math.max(1, viewWeek - 1); renderPlan(el); };
+  $('#wk-next').onclick = () => { STATE.planViewWeek = Math.min(8, viewWeek + 1); renderPlan(el); };
+
+  // 计划页修改排期（A4，V1.2 支持改每周天数）
+  $('#edit-sched').onclick = () => {
+    const sched = Object.assign({}, (profile.schedule || defaultSchedule()));
+    let days = trainingDayCount(sched);
+    openModal('<h3>调整每周排期</h3>' +
+      '<p class="small" style="margin-bottom:6px">每周训练天数：</p>' +
+      '<div id="ms-days" style="margin-bottom:10px">' +
+      [2, 3, 4, 5].map(n => '<button type="button" class="radio-chip' + (n === days ? ' on' : '') + '" data-days="' + n + '">' + n + ' 天</button>').join('') +
+      '</div>' +
+      '<p class="small" style="margin-bottom:8px">唯一规则：每周恰好 <strong id="ms-days-rule">' + days + ' 个训练日</strong>。</p>' +
+      '<div id="ms-sched">' + scheduleEditorHtml(sched) + '</div>' +
+      '<p class="small" id="ms-count" style="margin:8px 0"></p>' +
+      '<button class="btn btn-block" id="ms-save">保存排期</button>');
+    const refresh = () => {
+      const n = trainingDayCount(sched);
+      $('#ms-days-rule').textContent = days + ' 个训练日';
+      $('#ms-count').innerHTML = n === days ? '✅ 已选 ' + days + ' 个训练日。' : '当前 <strong>' + n + '</strong> 个训练日，需要恰好 ' + days + ' 个。';
+    };
+    bindScheduleEditor($('#ms-sched'), sched, refresh);
+    refresh();
+    $('#ms-days').querySelectorAll('.radio-chip').forEach(b => {
+      b.onclick = () => {
+        const nd = parseInt(b.dataset.days, 10);
+        if (nd === days) return;
+        if (!confirm('改成每周 ' + nd + ' 天会按你的目标重新生成建议排期，当前的自定义调整会被覆盖，确定吗？')) return;
+        days = nd;
+        $('#ms-days').querySelectorAll('.radio-chip').forEach(x => x.classList.toggle('on', x === b));
+        Object.keys(sched).forEach(k => delete sched[k]);
+        Object.assign(sched, suggestSchedule(profile.primaryGoal || 'posture', days));
+        $('#ms-sched').innerHTML = scheduleEditorHtml(sched);
+        bindScheduleEditor($('#ms-sched'), sched, refresh);
+        refresh();
+      };
+    });
+    $('#ms-save').onclick = async () => {
+      if (trainingDayCount(sched) !== days) { alert('每周需要恰好 ' + days + ' 个训练日'); return; }
+      STATE.profile.schedule = sched;
+      STATE.profile.scheduleConfirmed = true; // D4：改排期即视为已确认
+      await saveProfile(STATE.profile);
+      closeModal();
+      updateTabDots();
+      renderPlan(el);
+    };
+  };
+
+  // D2：新档首进计划页的全屏排期确认
+  showScheduleConfirmIfNeeded(el);
+}
+
+/* D2：排期确认视图（复用 7 天三态编辑器组件；「稍后再说」不置位） */
+function showScheduleConfirmIfNeeded(el) {
+  const profile = STATE.profile;
+  if (!profile || profile.scheduleConfirmed !== false || STATE.scheduleConfirmDismissed) return;
+  const sched = Object.assign({}, profile.schedule || defaultSchedule());
+  const targetDays = trainingDayCount(sched);
+  const confirmBtnId = 'sc-confirm-' + Date.now();
+  el.insertAdjacentHTML('beforeend',
+    '<div class="sc-mask" id="sc-mask">' +
+      '<div class="sc-panel">' +
+        '<div class="sc-head"><h3>' + esc(COPY.schedConfirmTitle) + '</h3>' +
+        '<button type="button" class="btn btn-secondary" id="sc-later">' + esc(COPY.laterBtn) + '</button></div>' +
+        '<p class="small" style="margin-bottom:10px">' + esc(COPY.schedConfirmIntro) + '</p>' +
+        '<div id="sc-sched">' + scheduleEditorHtml(sched) + '</div>' +
+        '<p class="small sc-count-line" id="sc-count"></p>' +
+        '<button class="btn btn-block" id="' + confirmBtnId + '">' + esc(COPY.schedConfirmBtn) + '</button>' +
+      '</div></div>');
+  const countEl = $('#sc-count');
+  const refresh = () => {
+    const n = trainingDayCount(sched);
+    countEl.innerHTML = (n === targetDays ? '✅ ' : '') + '当前 ' + n + ' 个训练日（需恰好 ' + targetDays + ' 个）。';
+  };
+  bindScheduleEditor($('#sc-sched'), sched, refresh);
+  refresh();
+  $('#' + confirmBtnId).onclick = async () => {
+    if (trainingDayCount(sched) !== targetDays) {
+      alert('每周需要恰好 ' + targetDays + ' 个训练日才能确认，请再调整一下。');
+      return;
+    }
+    profile.schedule = sched;
+    profile.scheduleConfirmed = true;
+    await saveProfile(profile);
+    updateTabDots();
+    renderPlan(el);
+  };
+  $('#sc-later').onclick = () => {
+    STATE.scheduleConfirmDismissed = true; // 本次浏览不再弹（红点保留）
+    const m = $('#sc-mask');
+    if (m) m.remove();
+  };
+}
+
+/* ============ 进展 ============ */
+function svgLine(points, w, h, color) {
+  if (!points.length) return '<p class="small">暂无数据</p>';
+  const vals = points.map(p => p.v);
+  const min = Math.min.apply(null, vals), max = Math.max.apply(null, vals);
+  const span = (max - min) || 1;
+  const stepX = points.length > 1 ? (w - 20) / (points.length - 1) : 0;
+  const d = points.map((p, i) => {
+    const x = 10 + i * stepX;
+    const y = h - 10 - ((p.v - min) / span) * (h - 20);
+    return (i === 0 ? 'M' : 'L') + x.toFixed(1) + ',' + y.toFixed(1);
+  }).join(' ');
+  const dots = points.map((p, i) => {
+    const x = 10 + i * stepX;
+    const y = h - 10 - ((p.v - min) / span) * (h - 20);
+    return '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="3" fill="' + color + '"><title>' + esc(p.label) + ': ' + p.v + '</title></circle>';
+  }).join('');
+  return '<svg viewBox="0 0 ' + w + ' ' + h + '" style="width:100%;background:var(--cream);border-radius:8px">' +
+    '<path d="' + d + '" fill="none" stroke="' + color + '" stroke-width="2"/>' + dots + '</svg>' +
+    '<p class="small">' + esc(points[0].label) + ' → ' + esc(points[points.length - 1].label) + ' ｜ ' + min + ' ~ ' + max + '</p>';
+}
+
+/* 力量进步亮点（分享卡用，1–2 条） */
+function strengthHighlights(review) {
+  const out = [];
+  for (const p of review.performances) {
+    if (p.change && p.change.dW > 0) {
+      const firstW = p.last.maxW - p.change.dW;
+      out.push(p.name + ' ' + firstW + '→' + p.last.maxW + 'kg');
+    }
+    if (out.length >= 2) break;
+  }
+  return out;
+}
+
+/* D12：Canvas 本地绘制 1080×1350 分享卡 */
+function drawShareCard(data) {
+  const W = 1080, H = 1350;
+  const canvas = document.createElement('canvas');
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext('2d');
+
+  // 奶油底
+  ctx.fillStyle = '#FCFAF3';
+  ctx.fillRect(0, 0, W, H);
+  // 顶部抹茶绿条
+  ctx.fillStyle = '#7FB069';
+  ctx.fillRect(0, 0, W, 220);
+  ctx.fillStyle = '#FFFFFF';
+  ctx.font = '700 56px -apple-system, "PingFang SC", sans-serif';
+  ctx.fillText('本周训练小结', 60, 105);
+  ctx.font = '400 34px -apple-system, "PingFang SC", sans-serif';
+  ctx.fillText(data.weekLabel, 60, 165);
+
+  // V1.5 ①：完成天数 D 方案（数字 150px + 说明分行 + 细线分隔，连续天数独立成段）
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#5A8F4A';
+  ctx.font = '700 150px -apple-system, "PingFang SC", sans-serif';
+  ctx.fillText(data.done + ' / ' + data.planned, W / 2, 445);
+  ctx.font = '400 40px -apple-system, "PingFang SC", sans-serif';
+  ctx.fillStyle = '#8B8577';
+  ctx.fillText('本周完成训练', W / 2, 532);
+  ctx.strokeStyle = '#DDD3BD';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo((W - 440) / 2, 578); ctx.lineTo((W + 440) / 2, 578);
+  ctx.stroke();
+  ctx.font = '600 52px -apple-system, "PingFang SC", sans-serif';
+  ctx.fillStyle = '#6F5F9E';
+  ctx.fillText('🔥 连续完成 ' + data.streak + ' 天', W / 2, 662);
+
+  // 力量亮点
+  ctx.textAlign = 'left';
+  ctx.font = '600 44px -apple-system, "PingFang SC", sans-serif';
+  ctx.fillStyle = '#3A362C';
+  let y = 792;
+  if (data.highlights.length) {
+    ctx.fillText('⭐ 力量进步', 80, y);
+    ctx.font = '400 42px -apple-system, "PingFang SC", sans-serif';
+    ctx.fillStyle = '#5A8F4A';
+    data.highlights.forEach(hl => { y += 74; ctx.fillText(hl, 110, y); });
+    y += 62;
+  }
+
+  // V1.5 ②：鼓励语居中放大加深，句下抹茶绿短细线（A 方案）
+  y = Math.max(y + 92, 1012);
+  ctx.font = '600 48px -apple-system, "PingFang SC", sans-serif';
+  ctx.fillStyle = '#2E2A21';
+  const motto = '「' + data.encourage + '」';
+  const lastY = wrapCanvasCenter(ctx, motto, W / 2, W - 150, 70, y);
+  ctx.strokeStyle = '#7FB069';
+  ctx.lineWidth = 5;
+  const lw = Math.min(ctx.measureText(motto).width, 560);
+  ctx.beginPath();
+  ctx.moveTo((W - lw) / 2, lastY + 34); ctx.lineTo((W + lw) / 2, lastY + 34);
+  ctx.stroke();
+
+  // 底部小字（V1.5 ③：可由调用方传入品牌署名，缺省用默认）
+  ctx.textAlign = 'center';
+  ctx.font = '400 30px -apple-system, "PingFang SC", sans-serif';
+  ctx.fillStyle = '#8B8577';
+  ctx.fillText(data.footer || COPY.shareFooter, W / 2, H - 50);
+  ctx.textAlign = 'left';
+  return canvas;
+}
+/* 居中换行绘制：cx 为水平中心；返回最后一行 baseline Y */
+function wrapCanvasCenter(ctx, text, cx, maxW, lineH, startY) {
+  ctx.textAlign = 'center';
+  const lines = [];
+  let cur = '';
+  for (const ch of text) {
+    if (cur && ctx.measureText(cur + ch).width > maxW) { lines.push(cur); cur = ch; }
+    else cur += ch;
+  }
+  if (cur) lines.push(cur);
+  lines.forEach((ln, i) => ctx.fillText(ln, cx, startY + i * lineH));
+  return startY + (lines.length - 1) * lineH;
+}
+
+/* V1.5 ③：按设置生成分享卡底部署名（客户名空 → 回退默认；超长截断防溢出） */
+function shareFooterFor(s) {
+  const name = String(s.shareBrandName || '').trim();
+  if (!name) return COPY.shareFooter;
+  const tpl = (BRAND_TEMPLATES[s.shareBrandTemplate] || BRAND_TEMPLATES[0]).text;
+  let out = tpl.replace('{name}', name);
+  if (out.length > 26) out = out.slice(0, 25) + '…';
+  return out;
+}
+
+async function renderProgress(el) {
+  const sessions = await DB.getAll('sessions');
+  const measurements = (await DB.getAll('measurements')).sort((a, b) => a.date.localeCompare(b.date));
+  const profile = STATE.profile;
+  const curWeek = currentWeekIndex(profile);
+  const planned = trainingDayCount(profile.schedule || defaultSchedule());
+  const review = computeWeeklyReview(sessions, weekStartOf(profile, curWeek), planned);
+  const streak = computeStreak(sessions);
+  const lastWeekDone = curWeek > 1 ?
+    computeWeeklyReview(sessions, weekStartOf(profile, curWeek - 1), planned).planVsActual.completed : null;
+
+  let html = '<div class="card"><div class="row between"><h2 style="margin:0">本周周报（第 ' + curWeek + ' 周）</h2>' +
+    (streak >= 1 ? '<span class="badge accent">🔥 连续 ' + streak + ' 天</span>' : '') + '</div>';
+
+  const pva = review.planVsActual;
+  html += '<h3 style="margin-top:10px">1. 计划 vs 实际</h3><p class="small">计划 ' + pva.planned + ' 次 ｜ 完成 ' + pva.completed + ' ｜ 部分完成 ' + pva.partial + ' ｜ 跳过 ' + pva.skipped + '</p>';
+
+  html += '<h3 style="margin-top:10px">2. 力量动作最近表现</h3>';
+  if (review.performances.length) {
+    html += review.performances.map(p =>
+      '<div class="plan-ex"><div>' + esc(p.name) + '</div><div class="pe-meta">' +
+      (p.last.maxW ? p.last.maxW + 'kg ' : '') + p.last.sets + '组/' + p.last.totalReps + '次' +
+      (p.change ? ' ｜ ' + (p.change.dW > 0 ? '+' : '') + p.change.dW + 'kg' : '') + '</div></div>').join('');
+  } else html += '<p class="small">本周暂无力量记录</p>';
+
+  html += '<h3 style="margin-top:10px">3. 加重 / 保持 / 减量（建议）</h3>';
+  if (review.progressions.length) {
+    html += '<ul class="small" style="padding-left:18px">' +
+      review.progressions.map(p => '<li><span class="badge ' + (p.category === '减量' ? 'orange' : 't-strength') + '">' + p.category + '</span> ' + esc(p.name) + '：' + esc(p.reason) + '</li>').join('') + '</ul>';
+  } else html += '<p class="small">完成一次训练后这里会有建议。</p>';
+
+  const machineNames = Object.keys(review.cardio.machines).map(m => cardioNameOf(m) + ' ' + review.cardio.machines[m] + ' 分钟').join('、');
+  html += '<h3 style="margin-top:10px">4. 有氧</h3><p class="small">总计 ' + review.cardio.totalMin + ' 分钟' + (machineNames ? '（' + esc(machineNames) + '）' : '') + '</p>';
+
+  html += '<h3 style="margin-top:10px">5. 膝部</h3>';
+  if (review.knee.redFlag) html += '<div class="alert-red">' + esc(COPY.redFlagText) + '</div>';
+  html += '<p class="small">' + (review.knee.points.length ?
+    '疼痛趋势：' + review.knee.points.map(p => p.date.slice(5) + '→' + p.pain).join('，') : '本周没有疼痛记录，挺好。') + '</p>';
+
+  html += '<h3 style="margin-top:10px">6. 恢复观察</h3><p class="small">' +
+    (review.recovery.sleepAvg !== null ? '平均睡眠 ' + review.recovery.sleepAvg.toFixed(1) + 'h ｜ ' : '') +
+    (review.recovery.energyAvg !== null ? '平均精力 ' + review.recovery.energyAvg.toFixed(1) + '/5 ｜ ' : '') +
+    esc(review.recovery.note) + '</p>';
+
+  html += '<h3 style="margin-top:10px">7. 下周建议</h3><ul class="small" style="padding-left:18px">' +
+    review.nextWeek.map(t => '<li>' + esc(t) + '</li>').join('') + '</ul>' +
+    '<button class="btn btn-block" id="share-btn" style="margin-top:10px">🎨 生成分享卡</button>' +
+    '<div id="share-out" style="margin-top:10px"></div></div>';
+
+  // 趋势
+  const doneSessions = sessions.filter(s2 => s2.status === '已完成' || s2.status === '部分完成').sort((a, b) => a.date.localeCompare(b.date));
+  const byWeekCount = {};
+  doneSessions.forEach(s2 => { const wk = s2.weekIndex || 1; byWeekCount[wk] = (byWeekCount[wk] || 0) + 1; });
+  // E13：完成率分母=排期训练日数
+  const recordedWeeks = Math.max(1, curWeek);
+  const rate = Math.round(doneSessions.length / (recordedWeeks * planned) * 100);
+  html += '<div class="card"><h2>趋势</h2>' +
+    '<h3>每周训练次数 / 完成率</h3>' +
+    svgLine(Object.keys(byWeekCount).sort().map(k => ({ label: '第' + k + '周', v: byWeekCount[k] })), 340, 110, '#5A8F4A') +
+    '<p class="small">累计完成率：' + rate + '%（按每周 ' + planned + ' 个训练日计）</p>';
+
+  const mainIds = ['goblet_box_squat', 'db_rdl', 'split_squat', 'incline_db_press'];
+  for (const id of mainIds) {
+    const pts = [];
+    doneSessions.forEach(s2 => {
+      const rec = (s2.exercises || []).find(e => e.exerciseId === id);
+      if (rec) {
+        const sets = (rec.sets || []).filter(x => x.weightKg !== null && x.weightKg !== undefined);
+        if (sets.length) pts.push({ label: s2.date.slice(5), v: Math.max.apply(null, sets.map(x => x.weightKg)) });
+      }
+    });
+    if (pts.length) html += '<h3 style="margin-top:8px">' + esc(EXERCISES[id].name) + ' 最大重量(kg)</h3>' + svgLine(pts, 340, 110, '#5A8F4A');
+  }
+
+  if (measurements.length) {
+    const wkMap = {};
+    measurements.forEach(m => {
+      const wk = m.date.slice(0, 7) + '-W' + Math.ceil(parseInt(m.date.slice(8, 10), 10) / 7);
+      wkMap[wk] = wkMap[wk] || [];
+      wkMap[wk].push(m.weightKg);
+    });
+    const pts = Object.keys(wkMap).sort().map(k => ({ label: k, v: Math.round(avg(wkMap[k]) * 10) / 10 }));
+    html += '<h3 style="margin-top:8px">体重周均值(kg)</h3>' + svgLine(pts, 340, 110, '#5A8F4A') +
+      '<p class="small">体重建议每周测 3–7 次，看周均值趋势就好，单日波动不用管。</p>';
+  }
+  html += '</div>';
+
+  // 身体数据录入
+  html += '<div class="card"><h2>身体数据录入</h2>' +
+    '<div class="grid2">' +
+    '<label class="field"><span>体重（kg）*</span><input id="ms-weight" type="number" step="0.1"></label>' +
+    '<label class="field"><span>腰围（cm）</span><input id="ms-waist" type="number" step="0.1"></label></div>' +
+    '<div class="grid2">' +
+    '<label class="field"><span>臀围（cm）</span><input id="ms-hip" type="number" step="0.1"></label>' +
+    '<label class="field"><span>大腿围（cm）</span><input id="ms-thigh" type="number" step="0.1"></label></div>' +
+    '<button class="btn btn-block" id="ms-save">保存</button></div>';
+
+  // 体态照片
+  const photos = (await DB.getAll('photos')).sort((a, b) => b.date.localeCompare(a.date));
+  html += '<div class="card"><h2>体态照片</h2>' +
+    '<p class="small">正面/侧面/背面，拍照或从相册导入；只存本机，不进 JSON 备份。</p>' +
+    '<div class="btn-row" style="margin:8px 0">' +
+    '<button class="btn btn-secondary" data-view="front">正面</button>' +
+    '<button class="btn btn-secondary" data-view="side">侧面</button>' +
+    '<button class="btn btn-secondary" data-view="back">背面</button></div>' +
+    '<input type="file" id="photo-input" accept="image/*" class="hidden">';
+  for (const view of ['front', 'side', 'back']) {
+    const list = photos.filter(p => p.view === view);
+    if (!list.length) continue;
+    const latest = list[0];
+    const fourWeeksAgo = list.find(p => (new Date(latest.date) - new Date(p.date)) >= 26 * 86400000);
+    html += '<h3 style="margin-top:8px">' + ({ front: '正面', side: '侧面', back: '背面' })[view] + '（' + list.length + ' 张）</h3>' +
+      '<div class="photo-grid">';
+    const show = fourWeeksAgo ? [fourWeeksAgo, latest] : list.slice(0, 3);
+    for (const p of show) {
+      html += '<div><img data-pid="' + p.id + '" alt="' + view + '"><p class="small" style="text-align:center">' + esc(p.date) + '</p></div>';
+    }
+    html += '</div>' + (fourWeeksAgo ? '<p class="small">同视角约 4 周对比</p>' : '');
+  }
+  html += '</div>';
+
+  el.innerHTML = html;
+
+  el.querySelectorAll('img[data-pid]').forEach(async img => {
+    const p = photos.find(x => x.id === img.dataset.pid);
+    if (p && p.blob) img.src = URL.createObjectURL(p.blob);
+  });
+
+  el.querySelectorAll('[data-view]').forEach(b => {
+    b.onclick = () => {
+      const input = $('#photo-input');
+      input.dataset.view = b.dataset.view;
+      input.click();
+    };
+  });
+  $('#photo-input').onchange = async e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    await DB.put('photos', { id: uuid(), date: todayStr(), view: e.target.dataset.view, blob: file, createdAt: Date.now() });
+    renderProgress(el);
+  };
+
+  $('#ms-save').onclick = async () => {
+    const w = parseFloat($('#ms-weight').value);
+    if (!w) { alert('体重为必填'); return; }
+    const m = { id: uuid(), date: todayStr(), weightKg: w };
+    const wa = parseFloat($('#ms-waist').value); if (wa) m.waistCm = wa;
+    const hp = parseFloat($('#ms-hip').value); if (hp) m.hipCm = hp;
+    const th = parseFloat($('#ms-thigh').value); if (th) m.thighCm = th;
+    await DB.put('measurements', m);
+    renderProgress(el);
+  };
+
+  // D12 分享卡（V1.5 ③：底部署名按设置渲染）
+  $('#share-btn').onclick = async () => {
+    const enc = pickEncouragement(pva.completed, planned, lastWeekDone === null ? -1 : lastWeekDone);
+    const canvas = drawShareCard({
+      done: pva.completed, planned,
+      streak,
+      highlights: strengthHighlights(review),
+      encourage: enc.text,
+      weekLabel: '第 ' + curWeek + ' 周 / 共 8 周 · ' + phaseName(curWeek),
+      footer: shareFooterFor(await getSettings())
+    });
+    const url = canvas.toDataURL('image/png');
+    $('#share-out').innerHTML =
+      '<img class="share-img" src="' + url + '" alt="本周分享卡">' +
+      '<p class="small" style="text-align:center;margin:6px 0">' + esc(COPY.shareHint) + '</p>' +
+      '<button class="btn btn-secondary btn-block" id="share-dl">下载 PNG</button>';
+    $('#share-dl').onclick = () => {
+      canvas.toBlob(blob => downloadBlob(blob, 'week-' + curWeek + '-share.png'), 'image/png');
+    };
+  };
+}
+
+/* ============ 动作库（B7 折叠；V1.4：📷 拍器械识别入口 + 详情弹层复用） ============ */
+function renderLibrary(el, filter) {
+  filter = filter || {};
+  const kw = (filter.kw || '').trim().toLowerCase();
+  const dayMap = {};
+  for (const tid of Object.keys(TEMPLATES)) {
+    const tpl = TEMPLATES[tid];
+    (tpl.exercises || []).forEach(pe => {
+      dayMap[pe.exerciseId] = dayMap[pe.exerciseId] || new Set();
+      dayMap[pe.exerciseId].add(tpl.name);
+    });
+    if (tpl.cardio) {
+      dayMap[tpl.cardio.exerciseId] = dayMap[tpl.cardio.exerciseId] || new Set();
+      dayMap[tpl.cardio.exerciseId].add(tpl.name);
+    }
+  }
+
+  let list = Object.values(EXERCISES);
+  if (kw) list = list.filter(ex => ex.name.toLowerCase().includes(kw) || (ex.en || '').toLowerCase().includes(kw));
+  if (filter.type) list = list.filter(ex => ex.type === filter.type);
+  if (filter.day) list = list.filter(ex => dayMap[ex.id] && Array.from(dayMap[ex.id]).some(n => n.includes(filter.day)));
+
+  el.innerHTML =
+    // V1.4 B4：识别入口（搜索三件套上方）
+    '<div class="card vision-cta">' +
+    '<button type="button" class="btn btn-block" id="lib-vision">' + esc(COPY.visionBtn) + '</button>' +
+    '<p class="small" style="margin-top:6px">' + esc(COPY.visionPrivacy) + '</p>' +
+    '<input type="file" id="vision-file" accept="image/*" class="hidden"></div>' +
+    '<div class="card">' +
+    '<input id="lib-kw" placeholder="按名称（中/英）检索" value="' + esc(filter.kw || '') + '">' +
+    '<div class="grid2" style="margin-top:8px">' +
+    '<select id="lib-day"><option value="">全部训练日</option>' +
+    ['力量A', '力量B', '椭圆仪', '跑步机', '体态'].map(d => '<option' + (filter.day === d ? ' selected' : '') + '>' + d + '</option>').join('') + '</select>' +
+    '<select id="lib-type"><option value="">全部器械</option>' +
+    Object.keys(TYPE_CN).map(t => '<option value="' + t + '"' + (filter.type === t ? ' selected' : '') + '>' + TYPE_CN[t] + '</option>').join('') + '</select>' +
+    '</div></div>' +
+    '<div class="card"><h2>动作（' + list.length + '）</h2>' +
+    (list.length ? list.map(ex =>
+      '<div class="lib-item"><div class="row between"><div><strong>' + esc(ex.name) + '</strong>' +
+      partTagsHtml(ex) +
+      '<p class="small">' + esc(ex.en || '') + ' ｜ ' + (TYPE_CN[ex.type] || ex.type) + '</p></div>' +
+      '<button class="btn btn-secondary" style="min-height:36px;font-size:13px" data-detail="' + ex.id + '">详情</button></div></div>'
+    ).join('') : '<p class="small">无匹配动作</p>') + '</div>';
+
+  const re = () => renderLibrary(el, { kw: $('#lib-kw').value, day: $('#lib-day').value, type: $('#lib-type').value });
+  $('#lib-kw').oninput = re;
+  $('#lib-day').onchange = re;
+  $('#lib-type').onchange = re;
+
+  el.querySelectorAll('[data-detail]').forEach(b => {
+    b.onclick = () => openExerciseDetail(b.dataset.detail);
+  });
+
+  // V1.4 B4：拍器械识别入口（未配置 → 引导去设置）
+  const visionBtn = $('#lib-vision');
+  const visionFile = $('#vision-file');
+  if (visionBtn) {
+    visionBtn.onclick = async () => {
+      const cfg = await configuredVisionCfg();
+      if (!cfg) { showVisionSetupGuide(); return; }
+      visionFile.value = '';
+      visionFile.click();
+    };
+  }
+  if (visionFile) visionFile.onchange = e => runVisionOnFile(e);
+}
+
+/* V1.4 R2：动作库详情弹层（普通详情/识别命中共用；顶部可带「仅供参考」条）
+ * 内含「加到今天的训练」按钮：有进行中 session 才可用。 */
+function openExerciseDetail(exId, opts) {
+  opts = opts || {};
+  const ex = EXERCISES[exId];
+  if (!ex) return;
+  const prof = STATE.profile;
+  const kneeUser = prof && prof.bodyStatus === 'knee';
+  const kneeAlert = (kneeUser && hasBodyNote(ex, 'knee')) ?
+    '<div class="alert-orange" style="margin-top:8px">' + esc(COPY.kneeRule) + '</div>' : '';
+  // 有 kneeRule 橙条时，细条不再重复提示 knee（肩/背等照常）
+  const tip = (prof && prof.bodyStatus !== 'none') ?
+    bodyTipHtml('lib:' + ex.id, ex, kneeAlert ? ['knee'] : null) : '';
+  const visionNote = opts.vision ?
+    '<div class="alert-orange vision-note">' + esc(COPY.visionDisclaimer) + '</div>' : '';
+  openModal('<h3>' + esc(ex.name) + partTagsHtml(ex) + '</h3>' +
+    visionNote +
+    '<p class="small" style="margin-bottom:8px">' + esc(ex.en || '') + ' ｜ ' + (TYPE_CN[ex.type] || ex.type) + '</p>' +
+    kneeAlert + tip +
+    '<details class="fold" open><summary>动作要领</summary><ul class="small">' +
+    ex.cues.map(c => '<li>' + esc(c) + '</li>').join('') + '</ul></details>' +
+    '<details class="fold"><summary>常见错误</summary><ul class="small">' +
+    ex.mistakes.map(c => '<li>' + esc(c) + '</li>').join('') + '</ul></details>' +
+    '<button class="btn btn-secondary btn-block" id="add-today" disabled style="margin-top:12px">' + esc(COPY.addTodayBtn) + '</button>' +
+    '<p class="small" id="add-today-hint" style="margin-top:4px">' + esc(COPY.addTodayNone) + '</p>' +
+    '<button class="btn btn-block" style="margin-top:10px" id="lib-close">关闭</button>');
+  bindBodyTipClose($('#modal-root'));
+  $('#lib-close').onclick = closeModal;
+  bindAddTodayButton(exId);
+}
+
+/* 找到今天「进行中」的 session（含当前执行中的内存态），用于「加到今天的训练」 */
+async function activeRunningSession() {
+  const cur = STATE.session;
+  if (cur && cur.date === todayStr() && cur.status === '进行中') return cur;
+  const all = await DB.getAll('sessions');
+  const hit = all.find(x => x.date === todayStr() && x.status === '进行中');
+  if (hit) STATE.session = hit; // 让执行页「继续」逻辑能直接接上
+  return hit || null;
+}
+function bindAddTodayButton(exId) {
+  const btn = $('#add-today');
+  if (!btn) return;
+  const hint = $('#add-today-hint');
+  activeRunningSession().then(act => {
+    if (!document.contains(btn)) return; // 弹层已被关闭
+    if (!act) { if (hint) hint.textContent = COPY.addTodayNone; return; }
+    btn.disabled = false;
+    if (hint) hint.textContent = '';
+    btn.onclick = async () => {
+      btn.disabled = true;
+      const item = planDefaultsFor(exId, act.weekIndex || currentWeekIndex(STATE.profile));
+      if (!act.planExercises) act.planExercises = [];
+      act.planExercises.push(item); // 追加到今日力量组末尾
+      act.updatedAt = Date.now();
+      if (STATE.session && STATE.session.id === act.id) STATE.session = act;
+      await DB.put('sessions', act);
+      closeModal();
+      go('today');
+      alert(COPY.addTodayDone);
+    };
+  });
+}
+
+/* ============ V1.4 拍器械识别（B8 调用 / B4 结果处理） ============ */
+async function configuredVisionCfg() {
+  const s = await getSettings();
+  const v = s.vision;
+  return (v && v.baseUrl && v.model && v.apiKey) ? v : null;
+}
+/* 无配置引导：说明 BYOK + 去设置按钮 + 路线 2 兜底 */
+function showVisionSetupGuide() {
+  openModal('<h3>' + esc(COPY.visionNoKeyTitle) + '</h3>' +
+    '<p class="small" style="margin-bottom:12px">' + esc(COPY.visionNoKeyText) + '</p>' +
+    '<button class="btn btn-block" id="vf-setup">' + esc(COPY.visionSetupBtn) + '</button>' +
+    '<p class="small" style="margin-top:12px">' + esc(COPY.visionManualFallback) + '</p>');
+  $('#vf-setup').onclick = () => { closeModal(); go('settings'); };
+}
+/* 未命中/解析失败：展示 guide 原文（若拿到）+ 兜底按钮 */
+function showVisionResultCard(res) {
+  openModal('<h3>📷 识别结果</h3>' +
+    (res.guide ?
+      '<p class="small" style="margin-bottom:10px">' + esc(COPY.visionNoMatch) + '</p><div class="card cream" style="margin-bottom:8px"><p style="font-size:14px">' + esc(res.guide) + '</p></div>'
+      : '<p class="small" style="margin-bottom:10px">' + esc(COPY.visionNoMatch) + '</p>') +
+    '<button class="btn btn-block" id="vf-close">' + esc(COPY.visionGoLibrary) + '</button>');
+  $('#vf-close').onclick = closeModal;
+}
+function readFileAsDataURL(file) {
+  return new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve(r.result);
+    r.onerror = () => reject(r.error || new Error('read-fail'));
+    r.readAsDataURL(file);
+  });
+}
+/* 图片压缩：画到 canvas，最大边 1024，JPEG 0.85，减小请求体积 */
+function compressImageData(dataUrl, maxSide, quality) {
+  return new Promise(resolve => {
+    const img = new Image();
+    img.onload = () => {
+      try {
+        const max = maxSide || 1024;
+        let w = img.naturalWidth || img.width, h = img.naturalHeight || img.height;
+        const k = Math.min(1, max / Math.max(w, h));
+        if (k < 1) { w = Math.round(w * k); h = Math.round(h * k); }
+        const cv = document.createElement('canvas');
+        cv.width = w; cv.height = h;
+        cv.getContext('2d').drawImage(img, 0, 0, w, h);
+        resolve(cv.toDataURL('image/jpeg', typeof quality === 'number' ? quality : 0.85));
+      } catch (e) { resolve(dataUrl); }
+    };
+    img.onerror = () => resolve(dataUrl);
+    img.src = dataUrl;
+  });
+}
+/* V1.4 B8：OpenAI 兼容识别调用；解析容错，任何失败抛带 kind/status 的错误 */
+async function visionRecognize(dataUrl, cfg) {
+  const base = String(cfg.baseUrl || '').trim().replace(/\/+$/, '');
+  const controller = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+  const timer = controller ? setTimeout(() => controller.abort(), 45000) : null;
+  let resp;
+  try {
+    resp = await fetch(base + '/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + cfg.apiKey },
+      body: JSON.stringify({
+        model: cfg.model,
+        messages: [{
+          role: 'user',
+          content: [
+            { type: 'text', text: buildVisionPromptText() },
+            { type: 'image_url', image_url: { url: dataUrl } }
+          ]
+        }],
+        max_tokens: 400
+      }),
+      signal: controller ? controller.signal : undefined
+    });
+  } catch (err) {
+    const e = new Error('network');
+    e.kind = (err && err.name === 'AbortError') ? 'timeout' : 'network';
+    throw e;
+  } finally { if (timer) clearTimeout(timer); }
+  if (!resp.ok) { const e = new Error('http ' + resp.status); e.status = resp.status; throw e; }
+  let payload;
+  try { payload = await resp.json(); } catch (e) { const x = new Error('bad-json'); x.kind = 'parse'; throw x; }
+  const msg = payload && payload.choices && payload.choices[0] && payload.choices[0].message;
+  const content = msg ? msg.content : null;
+  let text = '';
+  if (Array.isArray(content)) {
+    text = content.map(c => typeof c === 'string' ? c : (c && c.text ? c.text : '')).filter(Boolean).join('\n');
+  } else if (content) text = String(content);
+  if (!text) { const x = new Error('empty'); x.kind = 'empty'; throw x; }
+  const parsed = extractVisionJson(text);
+  return parsed ? { matchId: parsed.matchId, guide: parsed.guide || text } : { matchId: null, guide: text };
+}
+function visionErrorMessage(err) {
+  if (err && err.kind === 'timeout') return COPY.visionErrTimeout;
+  if (err && err.kind === 'network') return COPY.visionErrNet;
+  const st = err && err.status;
+  if (st === 401 || st === 403) return COPY.visionErrAuth;
+  if (st === 429) return COPY.visionErrRate;
+  if (st && st >= 500) return COPY.visionErrServer;
+  return COPY.visionErrGeneric;
+}
+/* 选图 → 压缩 → 识别 → 结果处理（loading / 错误 / 命中 / 未命中） */
+async function runVisionOnFile(e) {
+  const file = e.target.files && e.target.files[0];
+  if (!file) return;
+  const cfg = await configuredVisionCfg();
+  if (!cfg) { showVisionSetupGuide(); return; }
+  const btn = document.getElementById('lib-vision');
+  const btnLabel = btn ? btn.textContent : '';
+  if (btn) { btn.disabled = true; btn.textContent = COPY.visionLoading; }
+  try {
+    const dataUrl = await compressImageData(await readFileAsDataURL(file));
+    const res = await visionRecognize(dataUrl, { baseUrl: cfg.baseUrl, model: cfg.model, apiKey: cfg.apiKey });
+    if (btn && document.contains(btn)) { btn.disabled = false; btn.textContent = btnLabel; }
+    if (res.matchId && EXERCISES[res.matchId]) {
+      openExerciseDetail(res.matchId, { vision: true });
+    } else {
+      showVisionResultCard(res);
+    }
+  } catch (err) {
+    if (btn && document.contains(btn)) { btn.disabled = false; btn.textContent = btnLabel; }
+    alert(visionErrorMessage(err));
+  }
+}
+
+/* ============ V1.4 设置页「AI 器械识别」卡（B7） ============ */
+let visionEditOpen = false; // 已配置状态下点「更换」进入编辑
+function visionSettingsCard(s) {
+  const cfg = s.vision && s.vision.baseUrl && s.vision.model && s.vision.apiKey;
+  if (cfg && !visionEditOpen) {
+    const vendor = visionVendorById(s.vision.vendorId);
+    return '<div class="card"><h2>AI 器械识别</h2>' +
+      '<p class="small">' + esc(COPY.visionIntro) + '</p>' +
+      '<div class="plan-ex" style="margin-top:8px"><div><strong>' + esc((vendor && vendor.name) || '自定义') +
+      '</strong> <span class="badge subtle">' + esc(s.vision.model) + '</span></div>' +
+      '<div class="pe-meta">Key 已保存</div></div>' +
+      '<p class="small" style="margin:6px 0 10px">' + esc(COPY.visionPrivacy) + '</p>' +
+      '<div class="btn-row"><button class="btn btn-secondary" id="vs-edit">更换</button>' +
+      '<button class="btn btn-secondary" id="vs-clear">清除</button></div></div>';
+  }
+  const prev = (s.vision && s.vision.vendorId) ? s.vision : null;
+  const curVendor = prev ? (visionVendorById(prev.vendorId) || VISION_VENDORS[VISION_VENDORS.length - 1]) : VISION_VENDORS[0];
+  const opts = VISION_VENDORS.map(v =>
+    '<option value="' + v.id + '"' + (v.id === curVendor.id ? ' selected' : '') + '>' + esc(v.name) + '</option>').join('');
+  return '<div class="card"><h2>AI 器械识别</h2>' +
+    '<p class="small" style="margin-bottom:8px">' + esc(COPY.visionIntro) + '</p>' +
+    '<label class="field"><span>服务商</span><select id="vs-vendor">' + opts + '</select></label>' +
+    '<div id="vs-custom"' + (curVendor.id === 'custom' ? '' : ' class="hidden"') + '>' +
+    '<label class="field"><span>接口地址 baseUrl</span><input id="vs-url" type="text" placeholder="https://…/v1" value="' + esc(prev && curVendor.id === 'custom' ? prev.baseUrl : '') + '"></label>' +
+    '<label class="field"><span>模型名</span><input id="vs-model" type="text" placeholder="如 xxx-vl" value="' + esc(prev && curVendor.id === 'custom' ? prev.model : '') + '"></label></div>' +
+    (curVendor.id === 'custom' ? '' :
+      '<details class="fold" id="vs-fold"><summary>自定义模型名（预设厂商）</summary>' +
+      '<input id="vs-model-opt" type="text" value="' + esc((prev && prev.model && prev.model !== curVendor.model) ? prev.model : '') + '" placeholder="不填用该厂商默认：' + esc(curVendor.model) + '"></details>') +
+    '<label class="field"><span>API Key</span><input id="vs-key" type="password" autocomplete="off" placeholder="sk-…" value="' + esc(prev ? prev.apiKey : '') + '"></label>' +
+    '<p class="small" style="margin:0 0 10px">' + esc(COPY.visionPrivacy) + '　' + esc(COPY.visionModelNote) + '</p>' +
+    '<button class="btn btn-block" id="vs-save">保存</button></div>';
+}
+function bindVisionSettings(s) {
+  const vendorSel = $('#vs-vendor');
+  if (!vendorSel) return;
+  const urlIn = $('#vs-url'), modelIn = $('#vs-model'), optIn = $('#vs-model-opt'),
+    customWrap = $('#vs-custom'), fold = $('#vs-fold');
+  const syncMode = () => {
+    const v = visionVendorById(vendorSel.value);
+    const isCustom = !!(v && v.id === 'custom');
+    if (customWrap) customWrap.classList.toggle('hidden', !isCustom);
+    if (fold) fold.classList.toggle('hidden', !!isCustom);
+    if (optIn && v && !isCustom) {
+      optIn.placeholder = '不填用该厂商默认：' + v.model;
+      if (!optIn.dataset.keep && !optIn.value) optIn.value = v.model;
+    }
+  };
+  if (vendorSel) vendorSel.onchange = () => {
+    // 切换厂商：模型输入同步为新厂商默认（用户手工改过则重置记录）
+    const v = visionVendorById(vendorSel.value);
+    if (optIn && v && v.id !== 'custom') { optIn.value = v.model; delete optIn.dataset.keep; }
+    syncMode();
+  };
+  if (optIn) optIn.addEventListener('input', () => { optIn.dataset.keep = '1'; });
+  syncMode();
+  const keyIn = $('#vs-key');
+  $('#vs-save').onclick = async () => {
+    const v = visionVendorById(vendorSel.value);
+    let baseUrl, model;
+    if (!v) return;
+    if (v.id === 'custom') {
+      baseUrl = urlIn ? urlIn.value.trim() : '';
+      model = modelIn ? modelIn.value.trim() : '';
+    } else {
+      baseUrl = v.baseUrl;
+      model = (optIn ? optIn.value.trim() : '') || v.model;
+    }
+    const key = keyIn ? keyIn.value.trim() : '';
+    if (!baseUrl) { alert('填一下接口地址'); return; }
+    if (!model) { alert('填一下模型名'); return; }
+    if (!key) { alert('填上 API Key 才能识别'); return; }
+    s.vision = { vendorId: v.id, baseUrl: baseUrl.replace(/\/+$/, ''), model, apiKey: key };
+    await saveSettings(s);
+    visionEditOpen = false;
+    renderSettings(elSettingsRef);
+  };
+}
+let elSettingsRef = null;
+
+/* V1.5 ⑥：设置页「外观」卡 HTML（三皮肤单选，切换即时生效；分享卡不随皮肤） */
+function themeCardHtml(s) {
+  const cur = s.theme || 'cream';
+  const items = [
+    { id: 'cream', name: '奶油', desc: '经典米色 · 克制生活感', sw: ['#F5F0E6', '#7FB069'] },
+    { id: 'berry', name: '莓果', desc: '浅藕紫红 · 浓艳元气', sw: ['#FAF0F5', '#C4457A'] },
+    { id: 'night', name: '暗夜', desc: '墨绿深色 · 低调运动', sw: ['#1B221D', '#A6C94E'] }
+  ];
+  const cards = items.map(t =>
+    '<label style="display:flex;align-items:center;gap:10px;margin:8px 0;padding:10px 12px;border:1px solid ' + (cur === t.id ? 'var(--main)' : 'var(--border)') + ';border-radius:12px;background:' + (cur === t.id ? 'var(--main-bg)' : 'transparent') + '">' +
+    '<span style="flex:0 0 46px;height:30px;border-radius:8px;border:1px solid var(--border);display:inline-flex;overflow:hidden">' +
+    '<span style="flex:1;background:' + t.sw[0] + '"></span><span style="flex:1;background:' + t.sw[1] + '"></span></span>' +
+    '<span style="flex:1"><strong>' + t.name + '</strong><span class="small"> · ' + t.desc + '</span></span>' +
+    '<input type="radio" name="theme-radio" value="' + t.id + '"' + (cur === t.id ? ' checked' : '') + ' style="width:auto;min-height:auto"></label>').join('');
+  return '<div class="card"><h2>外观</h2>' +
+    '<p class="small">皮肤只作用于应用界面，分享卡保持统一米色风格。</p>' + cards + '</div>';
+}
+
+/* V1.5 ⑤：设置页「我的有氧项目」卡 HTML（四固定预设勾选激活 + 主有氧单选） */
+function cardioCardHtml(s) {
+  const active = s.customCardio || [];
+  const cards = CUSTOM_CARDIO_PRESETS.map(p => {
+    const on = active.indexOf(p.id) !== -1;
+    return '<label style="display:block;margin:8px 0;padding:10px 12px;border:1px solid ' + (on ? 'var(--main)' : 'var(--border)') + ';border-radius:12px;background:' + (on ? 'var(--main-bg)' : 'transparent') + '">' +
+      '<span style="display:flex;align-items:center;justify-content:space-between"><strong>' + esc(p.name) + '</strong>' +
+      '<input type="checkbox" data-co="' + p.id + '"' + (on ? ' checked' : '') + ' style="width:auto;min-height:auto"></span>' +
+      '<span style="display:block;margin-top:8px"><label><input type="radio" name="main-cardio" value="' + p.id + '"' + (s.mainCardio === p.id ? ' checked' : '') + (on ? '' : ' disabled') + ' style="width:auto;min-height:auto;margin-right:6px">设为主有氧（有氧日默认练它）</label></span>' +
+      '</label>';
+  }).join('');
+  return '<div class="card"><h2>我的有氧项目</h2>' +
+    '<p class="small">勾选你常做的有氧（户外 / 游泳 / 骑行 / 球类），训练记录时就能选；可把其中一项设为主有氧，替换计划里有氧日的默认器械（不设则维持椭圆仪 / 跑步机交替）。</p>' +
+    cards +
+    '<button class="btn btn-block" id="co-save" style="margin-top:6px">保存有氧项目</button></div>';
+}
+
+/* V1.5 ③：设置页「分享卡署名」卡 HTML（客户名 + 三模板单选） */
+function brandCardHtml(s) {
+  const name = esc(String(s.shareBrandName || '').trim());
+  const demoName = name || '客户名';
+  const rows = BRAND_TEMPLATES.map((t, i) =>
+    '<label style="display:block;margin:6px 0;line-height:1.6"><input type="radio" name="sb-tpl" value="' + i + '"' + ((s.shareBrandTemplate === i) ? ' checked' : '') + '> ' +
+    esc(t.text.replace('{name}', demoName)) + '</label>').join('');
+  return '<div class="card"><h2>分享卡署名</h2>' +
+    '<p class="small">分享卡底部的品牌署名；客户名留空则用默认「' + esc(COPY.shareFooter) + '」。</p>' +
+    '<label class="field"><span>客户名</span><input id="sb-name" maxlength="12" placeholder="如：李雷" value="' + name + '"></label>' +
+    '<div class="field"><span>署名样式（预览中的名字即客户名）</span>' + rows + '</div>' +
+    '<button class="btn btn-block" id="sb-save" style="margin-top:4px">保存署名</button></div>';
+}
+
+/* ============ 设置 ============ */
+async function renderSettings(el) {
+  elSettingsRef = el;
+  const s = await getSettings();
+  const profile = STATE.profile;
+  const goalLabel = (GOALS.find(g => g.id === profile.primaryGoal) || {}).label || '—';
+  let html =
+    themeCardHtml(s) +
+
+    '<div class="card"><h2>数据说明</h2><p class="small">' + esc(COPY.localOnly) + '</p>' +
+    '<p class="small" style="margin-top:4px">加重梯度：' + s.weightIncrement + 'kg ｜ 首要目标：' + esc(goalLabel) + '</p></div>' +
+
+    '<div class="card"><h2>备份与导出</h2>' +
+    '<button class="btn btn-block" id="exp-json">导出完整 JSON（不含照片）</button>' +
+    '<button class="btn btn-secondary btn-block" id="exp-zip">导出照片 ZIP</button>' +
+    '<h3 style="margin-top:12px">CSV 导出</h3>' +
+    '<div class="btn-row"><button class="btn btn-secondary" id="csv-sets">训练组</button>' +
+    '<button class="btn btn-secondary" id="csv-cardio">有氧</button>' +
+    '<button class="btn btn-secondary" id="csv-ms">测量</button></div></div>' +
+
+    '<div class="card"><h2>导入</h2>' +
+    '<p class="small">导入 JSON 将<strong>覆盖</strong>现有数据（冲突不合并），导入前需确认；将校验 schemaVersion 与结构。</p>' +
+    '<input type="file" id="imp-json" accept="application/json,.json" class="hidden">' +
+    '<button class="btn btn-secondary btn-block" id="imp-btn" style="margin-top:8px">选择 JSON 文件导入</button></div>' +
+
+    visionSettingsCard(s) +
+
+    cardioCardHtml(s) +
+
+    brandCardHtml(s) +
+
+    '<div class="card"><h2>周期</h2>' +
+    '<p class="small">开始日期：' + esc(profile.chosenStartDate || '—') + '（第 ' + currentWeekIndex(profile) + ' / 8 周）</p>' +
+    '<button class="btn btn-secondary btn-block" id="restart-cycle" style="margin-top:8px">重新开始周期（重选开始日期）</button></div>' +
+
+    '<div class="card"><h2>危险操作</h2>' +
+    '<button class="btn btn-danger btn-block" id="wipe">清空全部数据</button></div>';
+
+  el.innerHTML = html;
+
+  // V1.4：AI 器械识别卡（配置表单 / 已配置视图）
+  bindVisionSettings(s);
+  const vsEdit = $('#vs-edit');
+  if (vsEdit) vsEdit.onclick = () => { visionEditOpen = true; renderSettings(el); };
+  const vsClear = $('#vs-clear');
+  if (vsClear) vsClear.onclick = async () => {
+    s.vision = null; await saveSettings(s); visionEditOpen = false; renderSettings(el);
+  };
+
+  $('#exp-json').onclick = async () => {
+    const data = await exportJSON();
+    downloadBlob(new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }),
+      'fitness-workbench-backup-' + todayStr() + '.json');
+  };
+
+  $('#exp-zip').onclick = async () => {
+    try {
+      const blob = await exportPhotosZip();
+      downloadBlob(blob, 'fitness-photos-' + todayStr() + '.zip');
+    } catch (e) { alert(e.message); }
+  };
+
+  $('#csv-sets').onclick = async () => {
+    const sessions = await DB.getAll('sessions');
+    let csv = 'date,template,exercise,set,weightKg,reps,rir,painNote\n';
+    for (const se of sessions) {
+      for (const ex of (se.exercises || [])) {
+        const name = EXERCISES[ex.exerciseId] ? EXERCISES[ex.exerciseId].name : ex.exerciseId;
+        (ex.sets || []).forEach(st => {
+          csv += [se.date, se.templateId, name, st.setIndex + 1, st.weightKg === null ? '' : st.weightKg,
+            st.reps === null ? '' : st.reps, st.rir || '', (ex.painNote || '').replace(/[",\n]/g, ' ')].join(',') + '\n';
+        });
+      }
+    }
+    downloadBlob(new Blob(['﻿' + csv], { type: 'text/csv' }), 'training-sets-' + todayStr() + '.csv');
+  };
+
+  $('#csv-cardio').onclick = async () => {
+    const sessions = await DB.getAll('sessions');
+    let csv = 'date,machine,minutes,rpe,speed,level\n';
+    for (const se of sessions) {
+      if (se.cardio) {
+        const c = se.cardio;
+        csv += [se.date, cardioNameOf(c.machine), c.minutes, c.rpe,
+          c.speed === null ? '' : c.speed, c.level === null ? '' : c.level].join(',') + '\n';
+      }
+    }
+    downloadBlob(new Blob(['﻿' + csv], { type: 'text/csv' }), 'cardio-' + todayStr() + '.csv');
+  };
+
+  $('#csv-ms').onclick = async () => {
+    const ms = await DB.getAll('measurements');
+    let csv = 'date,weightKg,waistCm,hipCm,thighCm\n';
+    for (const m of ms.sort((a, b) => a.date.localeCompare(b.date))) {
+      csv += [m.date, m.weightKg, m.waistCm || '', m.hipCm || '', m.thighCm || ''].join(',') + '\n';
+    }
+    downloadBlob(new Blob(['﻿' + csv], { type: 'text/csv' }), 'measurements-' + todayStr() + '.csv');
+  };
+
+  $('#imp-btn').onclick = () => $('#imp-json').click();
+
+  // V1.5 ⑥：外观皮肤即时切换（保存 + 应用 body 主题 + 刷新选中态；分享卡不随皮肤）
+  el.querySelectorAll('input[name="theme-radio"]').forEach(r => {
+    r.addEventListener('change', async () => {
+      s.theme = r.value;
+      await saveSettings(s);
+      document.body.dataset.theme = r.value;
+      renderSettings(el);
+    });
+  });
+
+  // V1.5 ⑤：我的有氧项目保存（勾选启用后该行「主有氧」单选才可用）
+  const coSave = $('#co-save');
+  if (coSave) {
+    el.querySelectorAll('input[data-co]').forEach(cb => {
+      cb.addEventListener('change', () => {
+        const radio = el.querySelector('input[name="main-cardio"][value="' + cb.dataset.co + '"]');
+        if (radio) radio.disabled = !cb.checked;
+      });
+    });
+    coSave.onclick = async () => {
+      const picked = Array.from(el.querySelectorAll('input[data-co]:checked')).map(cb => cb.dataset.co);
+      const sel = document.querySelector('input[name="main-cardio"]:checked');
+      s.customCardio = picked;
+      s.mainCardio = (sel && picked.indexOf(sel.value) !== -1) ? sel.value : null;
+      await saveSettings(s);
+      renderSettings(el);
+    };
+  }
+
+  // V1.5 ③：分享卡署名保存（存 settings 后重渲染，预览同步刷新）
+  const sbSave = $('#sb-save');
+  if (sbSave) sbSave.onclick = async () => {
+    const sbName = $('#sb-name');
+    s.shareBrandName = (sbName ? sbName.value : '').trim();
+    const sel = document.querySelector('input[name="sb-tpl"]:checked');
+    s.shareBrandTemplate = sel ? parseInt(sel.value, 10) : 0;
+    await saveSettings(s);
+    renderSettings(el);
+  };
+
+  $('#imp-json').onchange = e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = async () => {
+      let obj;
+      try { obj = JSON.parse(reader.result); } catch (err) { alert('JSON 解析失败'); return; }
+      const err = validateImport(obj);
+      if (err) { alert('导入校验失败：' + err); return; }
+      const ok = await confirmModal('确认导入', '将覆盖现有训练记录、测量与档案（照片不受影响）。确定继续？', '覆盖导入', true);
+      if (!ok) return;
+      try {
+        await importJSON(obj);
+        const imported = normalizeProfile(await getProfile()); // V1.3：缺 bodyStatus/scheduleConfirmed 兜底
+        if (imported) await saveProfile(imported);
+        STATE.profile = imported;
+        alert('导入完成');
+        go('today');
+      } catch (e2) { alert('导入失败：' + e2.message); }
+    };
+    reader.readAsText(file);
+  };
+
+  $('#restart-cycle').onclick = () => {
+    openModal('<h3>重新开始周期</h3>' +
+      '<label class="field"><span>新周期第 1 周周一</span><input id="rc-date" type="date"></label>' +
+      '<p class="small">历史训练记录保留，仅重置周期定位。</p>' +
+      '<button class="btn btn-block" id="rc-save" style="margin-top:8px">确认重启</button>');
+    const d = new Date(); d.setDate(d.getDate() + ((8 - d.getDay()) % 7 || 7));
+    $('#rc-date').value = fmtDate(d);
+    $('#rc-save').onclick = async () => {
+      const v = $('#rc-date').value;
+      if (!v) { alert('请选择日期'); return; }
+      STATE.profile.chosenStartDate = v;
+      await saveProfile(STATE.profile);
+      closeModal();
+      go('today');
+    };
+  };
+
+  $('#wipe').onclick = async () => {
+    const ok1 = await confirmModal('清空全部数据', '将删除档案、全部训练记录、测量与照片。此操作不可恢复！', '继续', true);
+    if (!ok1) return;
+    const ok2 = await confirmModal('二次确认', '请再次确认：删除后无法找回。建议先导出 JSON 与照片 ZIP。', '永久删除', true);
+    if (!ok2) return;
+    await DB.clearAll();
+    STATE.profile = null;
+    location.reload();
+  };
+}
+
+/* ============ 启动 ============ */
+async function boot() {
+  // 测试辅助：访问路径带 ?reset=1 时清空 IndexedDB 全部本地数据并回到信息采集页
+  // （随后立即用 replaceState 去掉参数，避免每次刷新都重复清空）
+  if (new URLSearchParams(location.search).has('reset')) {
+    try { await DB.clearAll(); } catch (e) { /* 忽略清理异常 */ }
+    history.replaceState(null, '', location.pathname);
+  }
+  // V1.5 ⑥：应用已保存皮肤（默认奶油）
+  const bootSettings = await getSettings();
+  document.body.dataset.theme = bootSettings.theme || 'cream';
+  const raw = await getProfile();
+  // V1.3 C2/D1：旧档案迁移 bodyStatus / scheduleConfirmed（就地补齐并持久化）
+  if (raw) {
+    const needsMigrate = raw.bodyStatus === undefined || raw.scheduleConfirmed === undefined || !raw.schedule;
+    STATE.profile = normalizeProfile(raw);
+    if (needsMigrate) await saveProfile(STATE.profile);
+  } else {
+    STATE.profile = raw;
+  }
+  $$('.tab').forEach(t => { t.onclick = () => go(t.dataset.page); });
+
+  if ('serviceWorker' in navigator) {
+    try { navigator.serviceWorker.register('sw.js'); } catch (e) { /* 离线兜底 */ }
+  }
+
+  if (!STATE.profile) {
+    await renderOnboarding($('#page-onboarding'));
+  } else {
+    await maybeShowRirHelp();
+    go('today');
+  }
+}
+
+document.addEventListener('DOMContentLoaded', boot);
+
+</script>
+</body>
+</html>
