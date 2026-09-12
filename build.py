@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # build.py — 单文件构建：styles.css 与 data/db/engine/app.js 按序内联进 dist/index.html
 # sw.js 与 manifest.webmanifest 保持独立文件；每次构建重新生成 dist。
+import hashlib
 import re
 import shutil
 import sys
@@ -47,7 +48,15 @@ def main() -> int:
         shutil.rmtree(DIST)
     DIST.mkdir()
     (DIST / "index.html").write_text(html, encoding="utf-8")
-    shutil.copy2(SRC / "sw.js", DIST / "sw.js")
+    sw = (SRC / "sw.js").read_text(encoding="utf-8")
+    manifest = (SRC / "manifest.webmanifest").read_text(encoding="utf-8")
+    # 发布内容变动时自动更新缓存版本，不依赖手工改版本号。
+    digest = hashlib.sha256((html + manifest + sw).encode("utf-8")).hexdigest()[:16]
+    sw, n = re.subn(r"const VERSION = '[^']+';", "const VERSION = '" + digest + "';", sw)
+    if n != 1:
+        print("ERROR: sw.js 缺少 VERSION 常量", file=sys.stderr)
+        return 1
+    (DIST / "sw.js").write_text(sw, encoding="utf-8")
     shutil.copy2(SRC / "manifest.webmanifest", DIST / "manifest.webmanifest")
 
     print(f"OK: dist/index.html 生成（{len(html)} 字符）")

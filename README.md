@@ -127,7 +127,7 @@ python3 build.py
 
 产物为 `dist/index.html`、`dist/sw.js`、`dist/manifest.webmanifest` 三个文件。HTML 已内联应用样式与脚本；部署时请保留三个文件的相对位置。
 
-更新缓存版本：修改 `src/sw.js` 里的 `CACHE` 常量（如将 `fitness-workbench-public-v1` 改为 `fitness-workbench-public-v2`），然后重新构建并发布，让浏览器安装新版本缓存；必要时再次刷新页面等待接管。
+构建时会根据 HTML、安装配置和缓存脚本内容自动生成缓存版本；修改源码后重新运行 `python3 build.py` 即可。缓存按站点路径隔离，仅缓存本项目页面与安装配置。
 
 ---
 
@@ -141,16 +141,11 @@ python3 build.py
 npx wrangler pages deploy dist --project-name <你的项目名> --branch main
 ```
 
-**GitHub Pages**
+**GitHub Pages（本仓库发布方式）**
 
-仅上传代码不会自动发布网站。以下方式需要 Git 写入权限和 Pages 配置：
+`.github/workflows/pages.yml` 在推送到 `main` 时自动运行，也可手动触发：使用 Python 执行 `build.py`，上传 `dist/`，然后发布到 GitHub Pages。仓库 Settings → Pages 的 Source 选择 GitHub Actions。
 
-```bash
-# 若 dist/ 已纳入版本管理，可直接把该目录推到 gh-pages 分支：
-git subtree push --prefix dist origin gh-pages
-# 或直接将 dist/ 内的文件复制到 gh-pages 分支根目录后推送，
-# 并在仓库 Settings → Pages 中选择该分支与根目录。
-```
+发布状态可在仓库 Actions 的 Deploy GitHub Pages 工作流中查看，部署步骤会输出实际网址。网站入口位于 `/fitness-workbench/`；安装入口、资源和离线缓存均使用项目内相对路径。
 
 **其他**：Netlify / Vercel / 任意对象存储，直接上传 `dist/` 目录即可。
 
